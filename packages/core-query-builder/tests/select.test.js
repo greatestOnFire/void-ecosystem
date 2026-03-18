@@ -6,14 +6,14 @@ test('QueryBuilder: должен генерировать базовый SELECT 
   const qb = new QueryBuilder();
   const query = qb.from('users').build();
 
-  assert.equal(query, 'SELECT * FROM users;');
+  assert.equal(qb.from('users').build().sql, 'SELECT * FROM users;');
 });
 
 test('QueryBuilder: должен выбирать конкретные колонки', () => {
   const qb = new QueryBuilder();
   const query = qb.select('id', 'name').from('users').build();
 
-  assert.equal(query, 'SELECT id, name FROM users;');
+  assert.equal(qb.from('users').build().sql, 'SELECT id, name FROM users;');
 });
 
 test('QueryBuilder: должен генерировать WHERE с параметрами', () => {

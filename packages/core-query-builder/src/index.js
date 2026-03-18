@@ -2,46 +2,57 @@
  * Core Query Builder - фундамент экосистемы для генерации SQL.
  */
 export class QueryBuilder {
-  /** @type {string|null} */
   #table = null;
-
-  /** @type {string[]} */
   #columns = [];
+  #conditions = [];
+  #params = [];
 
-  /**
-   * Указывает колонки для выбора
-   * @param {...string} columns
-   * @returns {QueryBuilder}
-   */
   select(...columns) {
     this.#columns = columns;
     return this;
   }
 
-  /**
-   * Указывает таблицу для запроса
-   * @param {string} tableName
-   * @returns {QueryBuilder}
-   */
   from(tableName) {
     this.#table = tableName;
     return this;
   }
 
-  /** @private */
+  /**
+   * Добавляет условие WHERE (пока только равенство)
+   * @param {string} column
+   * @param {any} value
+   * @returns {QueryBuilder}
+   */
+  where(column, value) {
+    this.#params.push(value);
+    const placeholder = `$${this.#params.length}`;
+    this.#conditions.push(`${column} = ${placeholder}`);
+    return this;
+  }
+
   #buildSelect() {
     return this.#columns.length > 0 ? this.#columns.join(', ') : '*';
   }
 
+  #buildWhere() {
+    if (this.#conditions.length === 0) return '';
+    return ` WHERE ${this.#conditions.join(' AND ')}`;
+  }
+
   /**
-   * Собирает итоговую SQL строку
-   * @returns {string}
+   * Собирает итоговый объект для драйвера БД
+   * @returns {{ sql: string, params: any[] }}
    */
   build() {
     if (!this.#table) {
       throw new Error('Table is not defined. Use .from() before build()');
     }
-    const cols = this.#buildSelect();
-    return `SELECT ${cols} FROM ${this.#table};`;
+
+    const sql = `SELECT ${this.#buildSelect()} FROM ${this.#table}${this.#buildWhere()};`;
+
+    return {
+      sql,
+      params: [...this.#params]
+    };
   }
 }
