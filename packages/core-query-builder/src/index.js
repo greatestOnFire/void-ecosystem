@@ -5,6 +5,19 @@ export class QueryBuilder {
   /** @type {string|null} */
   #table = null;
 
+  /** @type {string[]} */
+  #columns = [];
+
+  /**
+   * Указывает колонки для выбора
+   * @param {...string} columns
+   * @returns {QueryBuilder}
+   */
+  select(...columns) {
+    this.#columns = columns;
+    return this;
+  }
+
   /**
    * Указывает таблицу для запроса
    * @param {string} tableName
@@ -20,6 +33,7 @@ export class QueryBuilder {
    * @returns {string}
    */
   build() {
-    return `SELECT * FROM ${this.#table};`;
+    const cols = this.#columns.length > 0 ? this.#columns.join(', ') : '*';
+    return `SELECT ${cols} FROM ${this.#table};`;
   }
 }
