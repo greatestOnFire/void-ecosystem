@@ -28,12 +28,20 @@ export class QueryBuilder {
     return this;
   }
 
+  /** @private */
+  #buildSelect() {
+    return this.#columns.length > 0 ? this.#columns.join(', ') : '*';
+  }
+
   /**
    * Собирает итоговую SQL строку
    * @returns {string}
    */
   build() {
-    const cols = this.#columns.length > 0 ? this.#columns.join(', ') : '*';
+    if (!this.#table) {
+      throw new Error('Table is not defined. Use .from() before build()');
+    }
+    const cols = this.#buildSelect();
     return `SELECT ${cols} FROM ${this.#table};`;
   }
 }
