@@ -1,13 +1,12 @@
 {
   "name": "void-ecosystem",
   "version": "1.0.0",
-  "main": "index.js",
   "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": ""
+    "test": "npm test -w @void/core-query-builder"
+  }
 }
