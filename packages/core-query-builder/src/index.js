@@ -91,6 +91,19 @@ export class QueryBuilder {
     return this;
   }
 
+  /**
+   * Инициализация удаления данных
+   * @param {string} tableName
+   * @returns {this}
+   */
+  deleteFrom(tableName) {
+    this.#type = 'DELETE';
+    this.#table = tableName;
+    this.#params = [];
+    this.#conditions = [];
+    return this;
+  }
+
   /** @private */
   #buildSelect() {
     const cols = this.#columns.length > 0 ? this.#columns.join(', ') : '*';
@@ -121,6 +134,15 @@ export class QueryBuilder {
     };
   }
 
+  /** @private */
+  #buildDelete() {
+    const where = this.#conditions.length > 0 ? ` WHERE ${this.#conditions.join(' AND ')}` : '';
+    return {
+      sql: `DELETE FROM ${this.#table}${where};`,
+      params: this.#params
+    };
+  }
+
   /**
    * Сборка итогового запроса
    * @returns {QueryResult}
@@ -131,6 +153,7 @@ export class QueryBuilder {
 
     if (this.#type === 'INSERT') return this.#buildInsert();
     if (this.#type === 'UPDATE') return this.#buildUpdate();
+    if (this.#type === 'DELETE') return this.#buildDelete();
     return this.#buildSelect();
   }
 }
