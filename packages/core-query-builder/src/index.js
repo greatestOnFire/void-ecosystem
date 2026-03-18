@@ -9,9 +9,14 @@ export class QueryBuilder {
   #type = 'SELECT';
 
   insertInto(tableName, data) {
+    const keys = Object.keys(data);
+    if (keys.length === 0) {
+      throw new Error('Insert data cannot be empty');
+    }
+
     this.#type = 'INSERT';
     this.#table = tableName;
-    this.#columns = Object.keys(data);
+    this.#columns = keys;
     this.#params = Object.values(data);
     return this;
   }

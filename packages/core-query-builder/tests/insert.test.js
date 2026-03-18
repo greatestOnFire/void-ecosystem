@@ -11,3 +11,14 @@ test('QueryBuilder: должен генерировать корректный I
   assert.strictEqual(result.sql, 'INSERT INTO users (email, role) VALUES ($1, $2);');
   assert.deepStrictEqual(result.params, ['test@void.com', 'admin']);
 });
+
+
+test('QueryBuilder: должен выбрасывать ошибку при пустом объекте данных для INSERT', () => {
+  const qb = new QueryBuilder();
+
+  assert.throws(() => {
+    qb.insertInto('users', {}).build();
+  }, {
+    message: 'Insert data cannot be empty'
+  });
+});
