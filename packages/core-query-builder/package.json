@@ -1,0 +1,8 @@
+{
+  "name": "@void/core-query-builder",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/select.test.js"
+  }
+}
