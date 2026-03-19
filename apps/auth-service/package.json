@@ -1,0 +1,12 @@
+{
+  "name": "@void/auth-service",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@void/core-query-builder": "*"
+  }
+}
