@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { QueryBuilder } from '@void/core-query-builder';
 
 import { User } from '../src/domain/user.entity.js';
+import { UserRepository } from '../src/infrastructure/user.repository.js';
+
 
 test('Auth Service: должен генерировать SQL для создания нового пользователя', () => {
   const qb = new QueryBuilder();
@@ -31,4 +33,15 @@ test('User Entity: должен успешно создавать объект �
 
   assert.strictEqual(user.email, data.email);
   assert.strictEqual(user.passwordHash, data.passwordHash);
+});
+
+test('UserRepository: должен корректно сохранять сущность User', () => {
+  const qb = new QueryBuilder();
+  const repo = new UserRepository(qb);
+  const user = new User({ email: 'repo@void.com', passwordHash: 'secret' });
+
+  const { sql, params } = repo.save(user);
+
+  assert.strictEqual(sql, 'INSERT INTO users (email, password_hash) VALUES ($1, $2);');
+  assert.deepStrictEqual(params, ['repo@void.com', 'secret']);
 });
