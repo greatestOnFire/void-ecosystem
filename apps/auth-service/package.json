@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@void/core-query-builder": "*",
-    "argon2": "^0.44.0"
+    "argon2": "^0.44.0",
+    "pg": "^8.20.0"
   }
 }
