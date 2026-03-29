@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "node src/app.js",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/",
+    "start": "node src/app.js"
   },
   "dependencies": {
     "@void/core-query-builder": "*",
