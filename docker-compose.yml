@@ -7,11 +7,11 @@ services:
     container_name: void-postgres
     restart: always
     environment:
-      POSTGRES_USER: void_admin
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: void_password
       POSTGRES_DB: void_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       # Сюда мы положим скрипт инициализации таблиц
