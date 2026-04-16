@@ -16,6 +16,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
       # Сюда мы положим скрипт инициализации таблиц
       - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d void_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # Кэш и очереди для SSO
   redis:
@@ -24,6 +29,29 @@ services:
     restart: always
     ports:
       - "6379:6379"
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: void-auth-service
+    command: npm start -w @void/auth-service
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=void_password
+      - DB_NAME=void_db
+      - REDIS_HOST=redis
+      - JWT_SECRET=super_secret_key
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
 volumes:
   postgres_data:
