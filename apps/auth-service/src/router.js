@@ -8,7 +8,7 @@ import { getJsonBody, sendJson } from './request-utils.js';
  */
 export async function router(req, res, context) {
   const { method, url } = req;
-  const { registerUser, db } = context;
+  const { registerUser, loginUser, tokenService, sessionRepo, db } = context;
 
   try {
     // GET /health - Проверка состояния
@@ -49,6 +49,7 @@ export async function router(req, res, context) {
     return sendJson(res, { error: 'Route not found' }, 404);
 
   } catch (error) {
+    console.error('ROUTER_ERROR_DEBUG:', error);
     // Маппинг ошибок бизнес-логики на HTTP статусы
     const statusMap = {
       'Invalid email format': 400,
