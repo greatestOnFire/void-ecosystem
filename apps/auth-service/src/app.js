@@ -42,8 +42,8 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`🚀 Auth Service ready on port ${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Auth Service ready on port ${PORT} (listening 0.0.0.0)`);
 });
 
 process.on('SIGINT', async () => {
