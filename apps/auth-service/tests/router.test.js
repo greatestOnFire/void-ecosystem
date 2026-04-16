@@ -51,3 +51,28 @@ test('Router: должен возвращать 201 при успешной ре
   assert.strictEqual(res.statusCode, 201);
   assert.ok(JSON.parse(res.body).message);
 });
+
+
+test('Router: должен возвращать 200 и токены при успешном входе', async () => {
+  const req = createMockReq('POST', '/auth/login', { email: 'tdd@void.com', password: '123' });
+  const res = createMockRes();
+
+  const mockContext = {
+    loginUser: {
+      execute: async () => ({ email: 'tdd@void.com' })
+    },
+    tokenService: {
+      generateAccessToken: () => 'access_token_123'
+    },
+    sessionRepo: {
+      save: async () => {}
+    }
+  };
+
+  await router(req, res, mockContext);
+
+  // ТЕСТ УПАДЕТ ТУТ: вернется 404 вместо 200
+  assert.strictEqual(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.strictEqual(body.accessToken, 'access_token_123');
+});
