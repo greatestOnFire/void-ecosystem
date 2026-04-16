@@ -1,35 +1,51 @@
 import http from 'node:http';
 import { db } from './infrastructure/db.js';
 import { redis } from './infrastructure/redis.js';
+import { QueryBuilder } from '@void/core-query-builder';
+
+// Инфраструктура и Домен
+import { UserRepository } from './infrastructure/user.repository.js';
+import { SessionRepository } from './infrastructure/session.repository.js';
+import { PasswordService } from './infrastructure/password.service.js';
+import { TokenService } from './infrastructure/token.service.js';
+
+// Сценарии (Use Cases)
+import { RegisterUser } from './use-cases/register-user.js';
+import { LoginUser } from './use-cases/login-user.js';
+
+// Роутер
+import { router } from './router.js';
 
 const PORT = process.env.PORT || 3000;
 
+// --- Инициализация (Composition Root) ---
+const qb = new QueryBuilder();
+const passwordService = new PasswordService();
+const tokenService = new TokenService(process.env.JWT_SECRET || 'dev-secret', '15m');
+
+const userRepo = new UserRepository(qb, db);
+const sessionRepo = new SessionRepository(redis);
+
+const registerUser = new RegisterUser(userRepo, passwordService);
+const loginUser = new LoginUser(userRepo, passwordService);
+
 /**
- * Главный обработчик запросов (Native Node.js)
+ * Главный сервер
  */
 const server = http.createServer(async (req, res) => {
-  // Устанавливаем заголовок ответа (JSON)
-  res.setHeader('Content-Type', 'application/json');
-
-  // Простой роутинг
-  if (req.url === '/health' && req.method === 'GET') {
-    res.writeHead(200);
-    return res.end(JSON.stringify({ status: 'ok', uptime: process.uptime() }));
-  }
-
-  // Если маршрут не найден
-  res.writeHead(404);
-  res.end(JSON.stringify({ error: 'Not Found' }));
+  // Передаем зависимости в роутер через контекст (объект зависимостей)
+  await router(req, res, {
+    registerUser,
+    loginUser,
+    tokenService,
+    sessionRepo
+  });
 });
 
-// Запуск сервера
 server.listen(PORT, () => {
-  console.log(`🚀 Auth Service (SSO) running on port ${PORT}`);
-  console.log(`📡 Persistence: Postgres (connected)`);
-  console.log(`⚡ Cache: Redis (connected)`);
+  console.log(`🚀 Auth Service ready on port ${PORT}`);
 });
 
-// Graceful shutdown (правильное закрытие при остановке)
 process.on('SIGINT', async () => {
   await db.close();
   redis.disconnect();
