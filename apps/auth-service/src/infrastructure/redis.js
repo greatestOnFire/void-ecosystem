@@ -5,8 +5,9 @@ import Redis from 'ioredis';
  * Данные берутся из docker-compose.yml
  */
 export const redis = new Redis({
-  host: 'localhost',
-  port: 6379,
+  // В Docker это будет 'redis' (имя сервиса), локально - '127.0.0.1'
+  host: process.env.REDIS_HOST || '127.0.0.1',
+  port: process.env.REDIS_PORT || 6379,
   // Если в будущем добавим пароль в docker-compose, пропишем здесь
 });
 
