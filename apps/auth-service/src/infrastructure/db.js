@@ -2,11 +2,11 @@ import pg from 'pg';
 
 // Данные берем из docker-compose.yml
 const pool = new pg.Pool({
-  user: 'postgres',
-  password: 'void_password',
-  host: '127.0.0.1',
-  port: 5433,
-  database: 'void_db',
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'void_password',
+  host: process.env.DB_HOST || '127.0.0.1',
+  port: parseInt(process.env.DB_PORT || '5433', 10),
+  database: process.env.DB_NAME || 'void_db',
 });
 
 /**
