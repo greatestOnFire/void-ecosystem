@@ -33,7 +33,7 @@ export class UserRepository {
     // 2. Выполняем запрос в реальной БД
     const result = await this.#db.query(sql, params);
 
-    if (result.rows.length === 0) return null;
+    if (!result.rows || result.rows.length === 0) return null;
 
     const row = result.rows[0];
 
