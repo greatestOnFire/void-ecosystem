@@ -38,7 +38,8 @@ const server = http.createServer(async (req, res) => {
     registerUser,
     loginUser,
     tokenService,
-    sessionRepo
+    sessionRepo,
+    db
   });
 });
 
