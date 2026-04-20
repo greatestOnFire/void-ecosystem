@@ -1,6 +1,10 @@
 import pg from 'pg';
 
-// Данные берем из docker-compose.yml
+/**
+ * Пул соединений с Postgres.
+ * Настройки приоритетно берутся из переменных окружения (Docker),
+ * либо используются дефолты для локальной разработки.
+ */
 const pool = new pg.Pool({
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'void_password',
