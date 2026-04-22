@@ -1,0 +1,13 @@
+{
+  "name": "@void/payment-gateway",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/",
+    "start": "node src/app.js"
+  },
+  "dependencies": {
+    "@void/core-query-builder": "*",
+    "pg": "^8.20.0"
+  }
+}
