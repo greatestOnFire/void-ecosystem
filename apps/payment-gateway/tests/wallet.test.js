@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-// Мы еще не создали Wallet, поэтому импорт упадет - это истинный RED
+
 import { Wallet } from '../src/domain/wallet.entity.js';
 
 test('Wallet Entity: должен выбрасывать ошибку при попытке установить отрицательный баланс', () => {

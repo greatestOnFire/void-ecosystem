@@ -5,7 +5,7 @@ import { DepositFunds } from '../src/use-cases/deposit-funds.js';
 test('DepositFunds Use Case: должен подготовить SQL для пополнения', async () => {
   const mockTxRepo = {
     save: (tx ,status) => ({
-      sql: `INSERT INTO `,
+      sql: `INSERT INTO transactions`,
       params: [],
     })
   };
