@@ -6,7 +6,7 @@
 
 /**
  * Core Query Builder - фундамент экосистемы для генерации SQL.
- * Реализует Fluent API и защиту от SQL-инъекций.
+ * Реализует Fluent API, защиту от SQL-инъекций и поддержку ACID-блокировок.
  */
 export class QueryBuilder {
   /** @type {string|null} */
@@ -23,6 +23,9 @@ export class QueryBuilder {
 
   /** @type {'SELECT'|'INSERT'|'UPDATE'|'DELETE'} */
   #type = 'SELECT';
+
+  /** @type {string} */
+  #lock = '';
 
   /**
    * Выбор колонок (только для SELECT)
@@ -41,6 +44,16 @@ export class QueryBuilder {
    */
   from(tableName) {
     this.#table = tableName;
+    return this;
+  }
+
+  /**
+   * Установка блокировки строки для текущей транзакции (ACID)
+   * Используется для предотвращения Lost Update.
+   * @returns {this}
+   */
+  forUpdate() {
+    this.#lock = ' FOR UPDATE';
     return this;
   }
 
@@ -109,7 +122,7 @@ export class QueryBuilder {
     const cols = this.#columns.length > 0 ? this.#columns.join(', ') : '*';
     const where = this.#conditions.length > 0 ? ` WHERE ${this.#conditions.join(' AND ')}` : '';
     return {
-      sql: `SELECT ${cols} FROM ${this.#table}${where};`,
+      sql: `SELECT ${cols} FROM ${this.#table}${where}${this.#lock};`,
       params: this.#params
     };
   }
