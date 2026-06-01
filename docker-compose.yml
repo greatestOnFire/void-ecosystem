@@ -53,5 +53,29 @@ services:
       redis:
         condition: service_started
 
+
+  payment-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: void-payment-gateway
+    command: npm start -w @void/payment-gateway
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=void_password
+      - DB_NAME=void_db
+      - REDIS_HOST=redis
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+
 volumes:
   postgres_data:
