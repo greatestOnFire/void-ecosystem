@@ -1,18 +1,11 @@
 import { Transaction } from '../domain/transaction.entity.js';
 
-/**
- * @typedef {Object} TransferInput
- * @property {string} fromWalletId - ID кошелька отправителя
- * @property {string} toWalletId - ID кошелька получателя
- * @property {number} amount - Сумма перевода
- * @property {string} [idempotencyKey] - Уникальный ключ операции
- */
-
 export class TransferFunds {
   #walletRepo;
   #transactionRepo;
   #db;
-  #redis; // Приватное поле для кэша
+  #redis;
+  #eventBus;
 
   /**
    * @param {Object} dependencies
@@ -20,27 +13,21 @@ export class TransferFunds {
    * @param {Object} dependencies.transactionRepo
    * @param {Object} dependencies.db
    * @param {Object} dependencies.redis
+   * @param {Object} dependencies.eventBus
    */
-  constructor({ walletRepo, transactionRepo, db, redis }) {
+  constructor({ walletRepo, transactionRepo, db, redis, eventBus }) {
     this.#walletRepo = walletRepo;
     this.#transactionRepo = transactionRepo;
     this.#db = db;
-    this.#redis = redis; // Внедряем зависимость через Composition Root
+    this.#redis = redis;
+    this.#eventBus = eventBus;
   }
 
-  /**
-   * @param {TransferInput} input
-   */
   async execute({ fromWalletId, toWalletId, amount, idempotencyKey }) {
-    // 1. Проверяем ключ в Redis (если он передан)
     if (idempotencyKey) {
       const redisKey = `idemp:${idempotencyKey}`;
       const cachedResult = await this.#redis.get(redisKey);
-
-      if (cachedResult) {
-        // Если ключ найден — возвращаем старый ответ без похода в БД
-        return JSON.parse(cachedResult);
-      }
+      if (cachedResult) return JSON.parse(cachedResult);
     }
 
     const client = await this.#db.getTransactionClient();
@@ -76,6 +63,11 @@ export class TransferFunds {
       if (idempotencyKey) {
         await this.#redis.set(`idemp:${idempotencyKey}`, JSON.stringify(successResult), 'EX', 86400);
       }
+
+      await this.#eventBus.publish('payment-events', {
+        type: 'TRANSFER_COMPLETED',
+        payload: { fromWalletId, toWalletId, amount }
+      })
 
       return successResult;
     } catch (error) {
