@@ -44,6 +44,16 @@ export async function router(req, res, context) {
 			return sendJson(res, { status: 'ok' });
 		}
 		
+		// Роут создания кошелька
+		if (method === 'POST' && url === '/payment/wallet') {
+			const data = await getJsonBody(req);
+			const result = await createWallet.execute({ userId: data.userId });
+			
+			await db.query(result.sql, result.params);
+			
+			return sendJson(res, { success: true, message: 'Wallet created' }, 201);
+		}
+		
 		if (method === 'POST' && url === '/payment/transfer') {
 			const data = await getJsonBody(req);
 			const idempotencyKey = String(req.headers['x-idempotency-key'] || '');
