@@ -34,6 +34,7 @@ export class QueryBuilder {
     this.#conditions = [];
     this.#params = [];
     this.#lock = '';
+    this.#type = 'SELECT';
   }
 
   /**
@@ -43,7 +44,6 @@ export class QueryBuilder {
    */
   select(...columns) {
     this.#reset();
-    this.#type = 'SELECT';
     this.#columns = [...new Set(columns.filter(Boolean))];
     return this;
   }
