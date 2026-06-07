@@ -135,8 +135,13 @@ export class QueryBuilder {
   #buildSelect() {
     const cols = this.#columns.length > 0 ? this.#columns.join(', ') : '*';
     const where = this.#conditions.length > 0 ? ` WHERE ${this.#conditions.join(' AND ')}` : '';
+    
+    const sqlString = `SELECT ${cols} FROM ${this.#table}${where} ${this.#lock};`
+    .replace(/\s+/g, ' ')
+    .replace(' ;', ';');
+    
     return {
-      sql: `SELECT ${cols} FROM ${this.#table}${where}${this.#lock};`,
+      sql: sqlString,
       params: this.#params
     };
   }
