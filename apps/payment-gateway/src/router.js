@@ -36,7 +36,7 @@ function sendJson(res, data, statusCode = 200) {
  */
 export async function router(req, res, context) {
 	const { method, url } = req;
-	const { transferFunds, depositFunds } = context;
+	const { transferFunds, depositFunds, createWallet, db } = context;
 	
 	try {
 		// Хелсчек для Docker
