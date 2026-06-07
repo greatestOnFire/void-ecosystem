@@ -16,11 +16,10 @@ async function main() {
 	const port = parseInt(process.env.PORT || '3001', 10);
 	
 	// Инициализируем общие зависимости
-	const qb = new QueryBuilder();
 	const eventBus = new EventBus(redis);
 	
-	const walletRepo = new WalletRepository(qb);
-	const transactionRepo = new TransactionRepository(qb);
+	const walletRepo = new WalletRepository();
+	const transactionRepo = new TransactionRepository();
 	
 	const createWallet = new CreateWallet(walletRepo);
 	const depositFunds = new DepositFunds({ transactionRepo, walletRepo, db });
