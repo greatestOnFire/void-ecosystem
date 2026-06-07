@@ -43,11 +43,13 @@ export class WalletRepository {
    */
   save(wallet) {
     const qb = new QueryBuilder();
-    return qb
+    const { sql, params } = qb
       .insertInto('wallets', {
         user_id: wallet.userId,
         balance: wallet.balance
       })
       .build();
+    
+    return { sql, params };
   }
 }
