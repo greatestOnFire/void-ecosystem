@@ -26,16 +26,6 @@ export class QueryBuilder {
 
   /** @type {string} */
   #lock = '';
-  
-  /** @private */
-  #reset() {
-    this.#table = null;
-    this.#columns = [];
-    this.#conditions = [];
-    this.#params = [];
-    this.#lock = '';
-    this.#type = 'SELECT';
-  }
 
   /**
    * Выбор колонок (только для SELECT)
@@ -43,7 +33,6 @@ export class QueryBuilder {
    * @returns {this}
    */
   select(...columns) {
-    this.#reset();
     this.#columns = [...new Set(columns.filter(Boolean))];
     return this;
   }
@@ -88,7 +77,6 @@ export class QueryBuilder {
    * @returns {this}
    */
   insertInto(tableName, data) {
-    this.#reset();
     const keys = Object.keys(data);
     if (keys.length === 0) throw new Error('Insert data cannot be empty');
 
@@ -106,7 +94,6 @@ export class QueryBuilder {
    * @returns {this}
    */
   update(tableName, data) {
-    this.#reset();
     const keys = Object.keys(data);
     if (keys.length === 0) throw new Error('Update data cannot be empty');
 
@@ -123,7 +110,6 @@ export class QueryBuilder {
    * @returns {this}
    */
   deleteFrom(tableName) {
-    this.#reset();
     this.#type = 'DELETE';
     this.#table = tableName;
     this.#params = [];
@@ -135,13 +121,8 @@ export class QueryBuilder {
   #buildSelect() {
     const cols = this.#columns.length > 0 ? this.#columns.join(', ') : '*';
     const where = this.#conditions.length > 0 ? ` WHERE ${this.#conditions.join(' AND ')}` : '';
-    
-    const sqlString = `SELECT ${cols} FROM ${this.#table}${where} ${this.#lock};`
-    .replace(/\s+/g, ' ')
-    .replace(' ;', ';');
-    
     return {
-      sql: sqlString,
+      sql: `SELECT ${cols} FROM ${this.#table}${where}${this.#lock};`,
       params: this.#params
     };
   }
