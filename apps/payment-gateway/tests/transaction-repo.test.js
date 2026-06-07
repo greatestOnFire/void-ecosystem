@@ -5,8 +5,8 @@ import { TransactionRepository } from '../src/infrastructure/transaction.reposit
 import { Transaction } from '../src/domain/transaction.entity.js';
 
 test('TransactionRepository: должен генерировать SQL для сохранения транзакции', () => {
-  const qb = new QueryBuilder();
-  const repo = new TransactionRepository(qb);
+  const mockCreateQb = () => new QueryBuilder();
+  const repo = new TransactionRepository(mockCreateQb);
   const tx = new Transaction({
     walletId: 'uuid-1',
     amount: 500,

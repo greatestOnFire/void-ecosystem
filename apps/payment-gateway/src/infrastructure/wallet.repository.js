@@ -1,17 +1,24 @@
-import { QueryBuilder } from '@void/core-query-builder';
-
 /**
  * Репозиторий для управления кошельками в БД.
  * Слой: Infrastructure (Data Mapper)
  */
 export class WalletRepository {
+  #createQb;
+  
+  /**
+   * @param {Function} createQb - Фабрика инстансов QueryBuilder снаружи из DI
+   */
+  constructor(createQb) {
+    this.#createQb = createQb;
+  }
+  
   /**
    * Находит кошелек и блокирует строку (ACID FOR UPDATE)
    * @param {string} id
    * @param {Object} client - DB Client
    */
   async findByIdForUpdate(id, client) {
-    const  qb = new QueryBuilder()
+    const  qb = this.#createQb();
     const { sql, params } = qb
       .from('wallets')
       .select('*')
@@ -29,7 +36,7 @@ export class WalletRepository {
    * @param {number} newBalance
    */
   updateBalance(id, newBalance) {
-    const qb = new QueryBuilder();
+    const qb = this.#createQb();
     return qb
       .update('wallets', { balance: newBalance })
       .where('id', id)
@@ -42,7 +49,7 @@ export class WalletRepository {
    * @returns {{ sql: string, params: any[] }}
    */
   save(wallet) {
-    const qb = new QueryBuilder();
+    const qb = this.#createQb();
     const { sql, params } = qb
       .insertInto('wallets', {
         user_id: wallet.userId,

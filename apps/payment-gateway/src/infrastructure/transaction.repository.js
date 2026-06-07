@@ -1,10 +1,17 @@
-import { QueryBuilder } from '@void/core-query-builder';
-
 /**
  * Репозиторий для управления транзакциями в БД.
  * Слой: Infrastructure
  */
 export class TransactionRepository {
+  #createQb;
+  
+  /**
+   * @param {Function} createQb - Фабрика инстансов QueryBuilder снаружи из DI
+   */
+  constructor(createQb) {
+    this.#createQb = createQb;
+  }
+  
   /**
    * Превращает сущность Transaction в SQL INSERT
    * @param {import('../domain/transaction.entity.js').Transaction} transaction
@@ -12,7 +19,7 @@ export class TransactionRepository {
    * @returns {{ sql: string, params: any[] }}
    */
   save(transaction, status) {
-    const qb = new QueryBuilder();
+    const qb = this.#createQb();
     
     qb.insertInto('transactions', {
       wallet_id: transaction.walletId,
