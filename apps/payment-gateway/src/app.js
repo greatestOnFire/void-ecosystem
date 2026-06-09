@@ -12,6 +12,8 @@ import { CreateWallet } from "./use-cases/create-wallet.js";
 import { DepositFunds } from "./use-cases/deposit-funds.js";
 import { TransferFunds } from "./use-cases/transfer-funds.js";
 
+import { SagaWorker } from './infrastructure/saga-worker.js';
+
 async function main() {
 	const port = parseInt(process.env.PORT || '3001', 10);
 	
@@ -19,12 +21,19 @@ async function main() {
 	const createQb = () => new QueryBuilder()
 	const eventBus = new EventBus(redis);
 	
+	// Создаем изолированного клиента для прослушивания SUBSCRIBE
+	const redisSub = redis.duplicate();
+	
 	const walletRepo = new WalletRepository(createQb);
 	const transactionRepo = new TransactionRepository(createQb);
 	
 	const createWallet = new CreateWallet(walletRepo);
 	const depositFunds = new DepositFunds({ transactionRepo, walletRepo, db });
 	const transferFunds = new TransferFunds({ walletRepo, transactionRepo, db, redis, eventBus })
+	
+	// --- ИНИЦИАЛИЗИРУЕМ И ЗАПУСКАЕМ SAGA WORKER ---
+	const sagaWorker = new SagaWorker({ redisSub, transferFunds });
+	await sagaWorker.start(); // Воркер уходит слушать канал payment-commands в фон
 	
 	const server = http.createServer(async (req, res) => {
 		// Передаем контекст со всеми юзкейсами и инфраструктурой в роутер
@@ -48,6 +57,7 @@ async function main() {
 		server.close(async () => {
 			await db.close();
 			redis.disconnect();
+			redisSub.disconnect();
 			console.log('Payment Gateway stopped gracefully.');
 			process.exit(0);
 		});
