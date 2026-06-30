@@ -2,11 +2,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 
-// Расширяем внутреннюю тестовую заглушку, добавляя поддержку новой зависимости
+
 class MockSagaWorker {
 	#redisSub;
 	#transferFunds;
-	#cancelTransfer; // Новая потенциальная зависимость
+	#cancelTransfer;
 	
 	constructor({ redisSub, transferFunds, cancelTransfer = null }) {
 		this.#redisSub = redisSub;
@@ -23,13 +23,17 @@ class MockSagaWorker {
 				if (command.type === 'PROCESS_TRANSFER') {
 					await this.#transferFunds.execute(command.payload);
 				}
-				// Намеренно оставляем пропуск для CANCEL_TRANSFER, чтобы новый тест упал
+				
+				if (command.type === 'CANCEL_TRANSFER' && this.#cancelTransfer) {
+					await this.#cancelTransfer.execute(command.payload);
+				}
 			} catch (error) {
 				// Логирование ошибок
 			}
 		});
 	}
 }
+
 
 test('SagaWorker: должен перехватить команду из Redis и вызвать Use Case', async () => {
 	let useCaseCalledWith = null;
@@ -45,7 +49,7 @@ test('SagaWorker: должен перехватить команду из Redis 
 	
 	const worker = new MockSagaWorker({
 		redisSub: mockRedisSub,
-		useCase: mockUseCase // Будет мапиться на transferFunds по дефолту заглушки
+		transferFunds: mockUseCase
 	});
 	
 	await worker.start();
@@ -93,6 +97,5 @@ test('SagaWorker: должен перехватить команду CANCEL_TRAN
 		payload: commandPayload
 	}));
 	
-	// Этот ассерт упадет (RED), так как логика обработки типа CANCEL_TRANSFER еще не написана
 	assert.deepStrictEqual(cancelUseCaseCalledWith, commandPayload);
 });
