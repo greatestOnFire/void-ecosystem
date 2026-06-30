@@ -6,11 +6,12 @@ import { EventBus } from './infrastructure/event-bus.js';
 import { router } from './router.js';
 
 import { WalletRepository } from "./infrastructure/wallet.repository.js";
-import  { TransactionRepository } from "./infrastructure/transaction.repository.js";
+import { TransactionRepository } from "./infrastructure/transaction.repository.js";
 
 import { CreateWallet } from "./use-cases/create-wallet.js";
 import { DepositFunds } from "./use-cases/deposit-funds.js";
 import { TransferFunds } from "./use-cases/transfer-funds.js";
+import { CancelTransfer } from "./use-cases/cancel-transfer.js"; // 🟢 ИМПОРТ НОВОГО СЦЕНАРИЯ
 
 import { SagaWorker } from './infrastructure/saga-worker.js';
 
@@ -29,10 +30,14 @@ async function main() {
 	
 	const createWallet = new CreateWallet(walletRepo);
 	const depositFunds = new DepositFunds({ transactionRepo, walletRepo, db });
-	const transferFunds = new TransferFunds({ walletRepo, transactionRepo, db, redis, eventBus })
+	const transferFunds = new TransferFunds({ walletRepo, transactionRepo, db, redis, eventBus });
+	
+	// 🟢 ИНИЦИАЛИЗИРУЕМ СЦЕНАРИЙ ОТМЕНЫ С ПЕРЕДАЧЕЙ DI
+	const cancelTransfer = new CancelTransfer({ walletRepo, transactionRepo, db });
 	
 	// --- ИНИЦИАЛИЗИРУЕМ И ЗАПУСКАЕМ SAGA WORKER ---
-	const sagaWorker = new SagaWorker({ redisSub, transferFunds });
+	// Передаем cancelTransfer третьей обязательной зависимостью
+	const sagaWorker = new SagaWorker({ redisSub, transferFunds, cancelTransfer });
 	await sagaWorker.start(); // Воркер уходит слушать канал payment-commands в фон
 	
 	const server = http.createServer(async (req, res) => {
