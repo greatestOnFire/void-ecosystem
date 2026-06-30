@@ -30,3 +30,45 @@ test('TransferFunds Use Case: должен отклонить перевод п�
     fromWalletId: 'sender-1', toWalletId: 'receiver-1', amount: 500
   }), { message: 'Insufficient funds' });
 });
+
+
+test('TransferFunds Use Case: должен вызывать findByIdForUpdate в алфавитном порядке ID кошельков ' +
+    'для предотвращения Deadlock', async () => {
+  const callOrder = [];
+  
+  const mockWalletRepo = {
+    findByIdForUpdate: async (id) => {
+      callOrder.push(id);
+      if (id === 'wallet-xyz') return { id: 'wallet-xyz', balance: '1000.00' };
+      if (id === 'wallet-abc') return { id: 'wallet-abc', balance: '500.00' };
+      return null;
+    },
+    updateBalance: () => ({ sql: 'UPDATE...', params: [] })
+  };
+  
+  const mockDb = {
+    getTransactionClient: async () => ({
+      query: async () => {},
+      release: () => {}
+    })
+  };
+  
+  const useCase = new TransferFunds({
+    walletRepo: mockWalletRepo,
+    transactionRepo: { save: () => ({ sql: 'INS...', params: [] }) },
+    db: mockDb,
+    redis: { get: async () => null, set: async () => {} },
+    eventBus: { publish: async () => 1 }
+  });
+  
+  // Отправитель - xyz (алфавитно больше), Получатель - abc (алфавитно меньше)
+  await useCase.execute({
+    fromWalletId: 'wallet-xyz',
+    toWalletId: 'wallet-abc',
+    amount: 100
+  });
+  
+  // Тест упадет (RED), потому что сейчас callOrder будет ['wallet-xyz', 'wallet-abc']
+  // А мы требуем строгий детерминированный порядок: сначала 'wallet-abc', затем 'wallet-xyz'
+  assert.deepStrictEqual(callOrder, ['wallet-abc', 'wallet-xyz']);
+});
