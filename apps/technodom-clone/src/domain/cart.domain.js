@@ -31,7 +31,13 @@ export class Cart {
 	 * @param {number} quantity - Количество для добавления
 	 */
 	addItem(product, quantity) {
-		this.#items.push({ product, quantity });
+		const existingItem = this.#items.find(item => item.product.id === product.id);
+		
+		if (existingItem) {
+			existingItem.quantity += quantity;
+		} else {
+			this.#items.push({ product, quantity });
+		}
 	}
 	
 	/**
