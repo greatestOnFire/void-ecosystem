@@ -1,4 +1,4 @@
-FROM node:20.16.0-slim
+FROM node:24.18.0-slim
 WORKDIR /app
 
 # 1. Копируем корневой конфиг
