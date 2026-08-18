@@ -3,16 +3,26 @@ import assert from 'node:assert/strict';
 import { QueryBuilder } from '@void/core-query-builder';
 import { ProductRepository } from '../src/infrastructure/product.repository.js';
 
-test('ProductRepository: должен корректно генерировать SQL для получения списка товаров', () => {
-	// Фабрика для инъекции зависимостей (Thread-Safety Ready)
+test('ProductRepository: должен выполнять SQL-запрос для получения всех товаров', async () => {
 	const mockCreateQb = () => new QueryBuilder();
 	
-	const repo = new ProductRepository(mockCreateQb);
-	const result = repo.findAll();
+	// Имитируем драйвер pg СУБД
+	let executedSql = '';
+	let executedParams = null;
+	const mockDb = {
+		query: async (sql, params) => {
+			executedSql = sql;
+			executedParams = params;
+			return { rows: [{ id: 'p1', title: 'Товар', price: 100, stock: 5 }] };
+		}
+	};
 	
-	// Проверяем структуру возвращаемого контракта
-	assert.strictEqual(result.sql, 'SELECT * FROM products;');
-	assert.deepStrictEqual(result.params, []);
+	const repo = new ProductRepository(mockCreateQb, mockDb);
+	const products = await repo.findAll();
+	
+	assert.strictEqual(executedSql, 'SELECT * FROM products;');
+	assert.deepStrictEqual(executedParams, []);
+	assert.strictEqual(products.length, 1);
 });
 
 test('ProductRepository: должен корректно генерировать SQL для поиска товара по ID', () => {
