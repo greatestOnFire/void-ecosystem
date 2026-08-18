@@ -25,4 +25,15 @@ export class ProductRepository {
 		
 		return { sql: sql, params: params };
 	}
+	
+	findById(id) {
+		const qb = this.#createQb();
+		
+		const { sql, params } = qb
+		.from('products')
+		.where('id', id)
+		.build();
+		
+		return { sql: sql, params: params };
+	}
 }
