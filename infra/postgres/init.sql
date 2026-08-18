@@ -34,3 +34,28 @@ CREATE TABLE IF NOT EXISTS transactions (
 
 CREATE INDEX idx_wallets_user_id ON wallets(user_id);
 CREATE INDEX idx_transactions_wallet_id ON transactions(wallet_id);
+
+-- =========================================================================
+-- ТАБЛИЦЫ ДЛЯ MARKETPLACE SERVICE (E-COMMERCE КОНТЕКСТ)
+-- =========================================================================
+
+-- 1. Таблица каталога товаров
+CREATE TABLE IF NOT EXISTS products (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(255) NOT NULL,
+    price DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
+    stock INTEGER NOT NULL DEFAULT 0,
+    -- Защита на уровне БД: цена не может быть отрицательной
+    CONSTRAINT positive_price CHECK (price >= 0)
+
+);
+
+-- 2. Таблица заказов
+CREATE TABLE IF NOT EXISTS orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    product_id UUID NOT NULL REFERENCES products(id),
+    quantity INTEGER NOT NULL DEFAULT 1,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING', -- PENDING, PAID, CANCELED
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
