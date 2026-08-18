@@ -1,39 +1,46 @@
 /**
  * Репозиторий для управления номенклатурой товаров каталога в БД.
- * Слой: Infrastructure (Data Mapper / Gateway)
+ * Слой: Infrastructure (Data Mapper)
  */
 export class ProductRepository {
 	#createQb;
+	#db; // Новое приватное поле для драйвера БД
 	
 	/**
-	 * @param {Function} createQb - Фабрика инстансов QueryBuilder из DI контейнера
+	 * @param {Function} createQb - Фабрика инстансов QueryBuilder
+	 * @param {Object} db - Обертка над драйвером pg (Postgres)
 	 */
-	constructor(createQb) {
+	constructor(createQb, db) {
 		this.#createQb = createQb;
+		this.#db = db;
 	}
 	
 	/**
-	 * Генерация SQL-запроса на получение всех товаров каталога
-	 * @returns {{ sql: string, params: any[] }} Объект запроса для драйвера pg
+	 * Получение всех товаров из БД
+	 * @returns {Promise<any[]>} Массив строк из базы данных
 	 */
-	findAll() {
+	async findAll() {
 		const qb = this.#createQb();
+		const { sql, params } = qb.from('products').build();
 		
-		const { sql, params } = qb
-		.from('products')
-		.build()
+		const result = await this.#db.query(sql, params);
 		
-		return { sql: sql, params: params };
+		return result.rows;
 	}
 	
-	findById(id) {
+	/**
+	 * Поиск товара по ID в БД
+	 * @param {string} id
+	 * @returns {Promise<Object|null>} Строка товара или null
+	 */
+	async findById(id) {
 		const qb = this.#createQb();
+		const { sql, params } = qb.from('products').where('id', id).build();
 		
-		const { sql, params } = qb
-		.from('products')
-		.where('id', id)
-		.build();
+		const result = await this.#db.query(sql, params);
 		
-		return { sql: sql, params: params };
+		if(!result.rows || result.rows.length === 0) return null;
+
+		return result.rows[0];
 	}
 }
