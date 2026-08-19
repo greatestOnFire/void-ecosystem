@@ -39,6 +39,10 @@ export class CreateOrder {
 			throw new Error('Product not found');
 		}
 		
+		if ( product.stock < quantity ) {
+			throw new Error('Insufficient stock');
+		}
+		
 		// Временная заглушка, чтобы каркас скомпилировался
 		return { success: true, orderId: 'stub' };
 	}
