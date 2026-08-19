@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { QueryBuilder } from '@void/core-query-builder';
-import { OrderRepository } from '../src/infrastructure/order.repository.js'; // Этого файла еще нет
+import { OrderRepository } from '../src/infrastructure/order.repository.js';
 
 test('OrderRepository: должен корректно генерировать SQL INSERT контракт для сохранения заказа', () => {
 	const mockCreateQb = () => new QueryBuilder();
