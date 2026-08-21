@@ -79,3 +79,56 @@ test('CreateOrder Use Case: должен выбрасывать ошибку, е
 	);
 });
 
+test('CreateOrder Use Case: должен успешно открыть транзакцию и записать заказ в БД', async () => {
+	// 1. Имитируем, что товар успешно найден и на складе его достаточно
+	const mockProductRepo = {
+		findById: async (id) => ({ id, title: 'Ноутбук', price: 400000, stock: 10 })
+	};
+	
+	// 2. Имитируем, что репозиторий заказов генерирует правильный SQL контракт
+	let saveCalledWith = null;
+	const mockOrderRepo = {
+		save: (order) => {
+			saveCalledWith = order;
+			return { sql: 'INSERT INTO orders (id) VALUES ($1);', params: [order.id] };
+		}
+	};
+	
+	// 3. Имитируем транзакционного клиента СУБД для проверки вызовов BEGIN/COMMIT
+	const executedQueries = [];
+	const mockClient = {
+		query: async (sql, params) => {
+			executedQueries.push(sql);
+		},
+		release: () => {}
+	};
+	
+	const mockDb = {
+		getTransactionClient: async () => mockClient
+	};
+	
+	const useCase = new CreateOrder({
+		productRepo: mockProductRepo,
+		orderRepo: mockOrderRepo,
+		db: mockDb
+	});
+	
+	const result = await useCase.execute({
+		userId: 77,
+		productId: 'prod-laptop',
+		quantity: 1
+	});
+	
+	// Проверяем финтех-инварианты выполнения:
+	assert.strictEqual(result.success, true);
+	assert.ok(result.orderId); // ID заказа должен быть сгенерирован (UUID)
+	
+	// Проверяем строгое соблюдение ACID границ в СУБД
+	assert.strictEqual(executedQueries[0], 'BEGIN');
+	assert.strictEqual(executedQueries[1], 'INSERT INTO orders (id) VALUES ($1);');
+	assert.strictEqual(executedQueries[2], 'COMMIT');
+	
+	// Проверяем, что в репозиторий улетел правильный статус
+	assert.strictEqual(saveCalledWith.status, 'PENDING');
+});
+
