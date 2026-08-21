@@ -43,7 +43,35 @@ export class CreateOrder {
 			throw new Error('Insufficient stock');
 		}
 		
-		// Временная заглушка, чтобы каркас скомпилировался
-		return { success: true, orderId: 'stub' };
+		const orderId = crypto.randomUUID();
+		
+		// Получаем изолированного клиента из пула СУБД
+		const client = await this.#db.getTransactionClient();
+		
+		try {
+			await client.query('BEGIN')
+			
+			// Генерируем SQL-инструкцию через наш Data Mapper репозиторий
+			const insertQuery = this.#orderRepo.save({
+				id: orderId,
+				userId,
+				productId,
+				quantity,
+				status: 'PENDING'
+			});
+			
+			await client.query(insertQuery.sql, insertQuery.params );
+			
+			await client.query('COMMIT')
+			
+			return { success: true, orderId };
+		} catch (error) {
+			// При любом сбое — откатываем изменения локально
+			await client.query('ROLLBACK');
+			throw error;
+		} finally {
+			// Обязательно возвращаем клиента обратно в пул соединений Linux/Postgres
+			client.release();
+		}
 	}
 }
