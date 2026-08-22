@@ -36,6 +36,13 @@ export class OrderSagaWorker {
 					await this.#db.query(query.sql, query.params);
 				}
 				
+				if ( event.type === 'CANCEL_TRANSFER' ) {
+					const orderId = event.payload.originalReferenceId;
+					const query = this.#orderRepo.updateStatus(orderId, 'CANCELED');
+					
+					await this.#db.query(query.sql, query.params);
+				}
+				
 			} catch (error) {
 				console.error('OrderSagaWorker Error:', error.message);
 			}
