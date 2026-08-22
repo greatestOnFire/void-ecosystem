@@ -1,3 +1,5 @@
+import crypto from 'node:crypto'
+
 /**
  * @typedef {Object} CreateOrderInput
  * @property {number} userId - ID покупателя
