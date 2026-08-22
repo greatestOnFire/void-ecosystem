@@ -16,17 +16,20 @@ export class CreateOrder {
 	#productRepo;
 	#orderRepo;
 	#db;
+	#eventBus;
 	
 	/**
 	 * @param {Object} dependencies
 	 * @param {Object} dependencies.productRepo
 	 * @param {Object} dependencies.orderRepo
 	 * @param {Object} dependencies.db
+	 * @param {Object} dependencies.eventBus
 	 */
-	constructor({ productRepo, orderRepo, db }) {
+	constructor({ productRepo, orderRepo, db, eventBus }) {
 		this.#productRepo = productRepo;
 		this.#orderRepo = orderRepo;
 		this.#db = db;
+		this.#eventBus = eventBus;
 	}
 	
 	/**
@@ -64,7 +67,17 @@ export class CreateOrder {
 			
 			await client.query(insertQuery.sql, insertQuery.params );
 			
-			await client.query('COMMIT')
+			await client.query('COMMIT');
+			
+			const totalAmount = product.price * quantity;
+			
+			await this.#eventBus?.publish('payment-commands', {
+				type: 'PROCESS_TRANSFER',
+				payload: {
+					amount: totalAmount,
+					originalReferenceId: productId,
+				}
+			})
 			
 			return { success: true, orderId };
 		} catch (error) {
