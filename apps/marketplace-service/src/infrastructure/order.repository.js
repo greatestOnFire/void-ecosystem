@@ -13,6 +13,22 @@ export class OrderRepository {
 	}
 	
 	/**
+	 * Подготовка SQL-инструкции для обновления статуса заказа.
+	 * @param {string} id - UUID заказа
+	 * @param {string} status - Новый статус (PAID, CANCELED)
+	 * @returns {{ sql: string, params: any[] }} Контракт запроса для драйвера pg
+	 */
+	updateStatus(id, status) {
+		const qb = this.#createQb();
+		
+		// Используем Fluent API нашего билдера для генерации UPDATE orders SET status = $1 WHERE id = $2;
+		return qb
+		.update('orders', { status })
+		.where('id', id)
+		.build();
+	}
+	
+	/**
 	 * Подготовка SQL-инструкции для вставки нового заказа.
 	 * Возвращает чистый SQL/Params для оркестрации внутри ACID транзакции Use Case'ом.
 	 *
