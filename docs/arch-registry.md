@@ -111,6 +111,9 @@
   - `ProductRepository`: асинхронный Data Mapper для `core-query-builder` с защитой от пустых строк.
   - `OrderRepository`: Data Mapper со змеиным маппингом полей СУБД и методом `updateStatus`.
   - `OrderSagaWorker`: фоновый демон маркетплейса, слушающий канал `payment-events` на дубликате клиента Redis для обеспечения асинхронного замыкания Саги (`TRANSFER_COMPLETED` -> статус `PAID`, `CANCEL_TRANSFER` -> статус `CANCELED`).
+  - `Router`: нативный HTTP-диспетчер с поддержкой GET /api/products и POST /api/orders (вызов Use Case сценария создания заказа).
+  - `request-utils.js`: асинхронный парсер стримов для сбора бинарных чанков входящего тела запроса в чистый JSON.
+
 
 ## 🛠 Интеграция и Распределенные Системы
 - **Saga Pattern (Choreography):** Микросервисы взаимодействуют асинхронно через Redis Pub/Sub. Семантика Exactly-Once гарантируется идемпотентными ключами на стороне платежного шлюза.
