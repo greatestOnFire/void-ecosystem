@@ -17,3 +17,10 @@ export async function getJsonBody(req) {
 		req.on('error', (err) => reject(err));
 	});
 }
+
+
+// Вспомогательная утилита унифицированного ответа
+export function sendJson(res, data, status = 200) {
+	res.writeHead(status, { 'Content-Type': 'application/json' });
+	res.end(JSON.stringify(data));
+}
