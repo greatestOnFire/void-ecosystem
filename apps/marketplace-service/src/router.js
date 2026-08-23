@@ -1,8 +1,4 @@
-// Вспомогательная утилита унифицированного ответа
-function sendJson(res, data, status = 200) {
-	res.writeHead(status, { 'Content-Type': 'application/json' });
-	res.end(JSON.stringify(data));
-}
+import { getJsonBody , sendJson } from "./request-utils.js";
 
 /**
  * Главный роутер маркетплейса (API Dispatcher).
@@ -12,10 +8,11 @@ function sendJson(res, data, status = 200) {
  * @param {import('node:http').ServerResponse} res
  * @param {Object} context - Инжектируемые зависимости (DI)
  * @param {Object} context.productRepo
+ * @param {Object} context.createOrder
  */
 export async function router(req, res, context) {
 	const { method, url } = req;
-	const { productRepo } = context;
+	const { productRepo, createOrder } = context;
 	
 	try {
 		// GET /health - Хелсчек для Docker
@@ -27,6 +24,13 @@ export async function router(req, res, context) {
 		if (method === 'GET' && url === '/api/products') {
 			const products = await productRepo.findAll();
 			return sendJson(res, products);
+		}
+		
+		if (method === 'POST' && url === '/api/orders') {
+			const data = await getJsonBody(req);
+			const result = await createOrder.execute(data);
+			
+			return sendJson(res, result, 201);
 		}
 		
 		// 404 - Маршрут не найден
