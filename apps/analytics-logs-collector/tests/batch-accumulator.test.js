@@ -34,3 +34,35 @@ test('BatchLogAccumulator: должен копить логи в памяти и
 	assert.strictEqual(flushedBatches[0].table, 'saga_analytics_logs');
 	assert.strictEqual(flushedBatches[0].values.length, 3); // В СУБД улетела вся пачка из 3 элементов разом!
 });
+
+test('BatchLogAccumulator: должен принудительно сбрасывать данные по таймеру, даже если лимит пачки не достигнут', async () => {
+	const flushedBatches = [];
+	const mockClickHouse = {
+		insert: async ({ table, values, format }) => {
+			flushedBatches.push({ table, values, format });
+		}
+	};
+	
+	// Инициализируем аккумулятор с лимитом 10 штук, но временем сброса 20 миллисекунд
+	const accumulator = new BatchLogAccumulator({
+		clickhouse: mockClickHouse,
+		batchLimit: 10,
+		flushIntervalMs: 20 // Новое свойство для конфигурации таймера
+	});
+	
+	// Пушим всего 1 лог. Лимит (1/10) не достигнут!
+	await accumulator.push({ event: 'NIGHT_LOG', orderId: 'id-unique' });
+	assert.strictEqual(flushedBatches.length, 0); // В эту же миллисекунду в базе ничего нет
+	
+	// Ждем 50 миллисекунд (дольше, чем flushIntervalMs в 20мс)
+	await new Promise((resolve) => setTimeout(resolve, 50));
+	
+	// Проверяем финтех-инвариант страховки: таймер сработал и вытолкнул ночной лог на диск!
+	assert.strictEqual(flushedBatches.length, 1);
+	assert.strictEqual(flushedBatches[0].values.length, 1);
+	assert.strictEqual(flushedBatches[0].values[0].event, 'NIGHT_LOG');
+	
+	// Очищаем таймер, чтобы Node.js завершил процесс теста без зависания
+	accumulator.destroy();
+});
+
