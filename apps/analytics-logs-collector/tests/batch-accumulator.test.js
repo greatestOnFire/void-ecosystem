@@ -33,6 +33,9 @@ test('BatchLogAccumulator: должен копить логи в памяти и
 	assert.strictEqual(flushedBatches.length, 1);
 	assert.strictEqual(flushedBatches[0].table, 'saga_analytics_logs');
 	assert.strictEqual(flushedBatches[0].values.length, 3); // В СУБД улетела вся пачка из 3 элементов разом!
+	
+	// Очищаем таймер, чтобы Node.js завершил процесс теста без зависания
+	accumulator.destroy();
 });
 
 test('BatchLogAccumulator: должен принудительно сбрасывать данные по таймеру, даже если лимит пачки не достигнут', async () => {

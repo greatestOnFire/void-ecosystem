@@ -7,16 +7,22 @@ export class BatchLogAccumulator {
 	#clickhouse;
 	#batchLimit;
 	#buffer;
+	#timer;
 	
 	/**
 	 * @param {Object} dependencies
 	 * @param {Object} dependencies.clickhouse - Клиент ClickHouse
 	 * @param {number} [dependencies.batchLimit=1000] - Максимальный размер пачки
+	 * @param {number} [dependencies.flushIntervalMs=5000] - Интервал сброса по времени в мс
 	 */
-	constructor({ clickhouse, batchLimit = 1000 }) {
+	constructor({ clickhouse, batchLimit = 1000, flushIntervalMs = 5000 }) {
 		this.#clickhouse = clickhouse;
 		this.#batchLimit = batchLimit;
 		this.#buffer = [];
+		
+		this.#timer = setInterval(() => {
+			if (this.#buffer.length > 0) this.#flush().catch(() => {});
+		}, flushIntervalMs);
 	}
 	
 	/**
@@ -30,6 +36,15 @@ export class BatchLogAccumulator {
 		
 		if (this.#buffer.length >= this.#batchLimit) {
 			await this.#flush();
+		}
+	}
+	
+	/**
+	 * Метод для явного уничтожения сокетов/таймеров в конце тестов или при SIGINT Linux
+	 */
+	destroy() {
+		if (this.#timer) {
+			clearInterval(this.#timer); // 🟢 Чистим интервал из макрозадач Node.js
 		}
 	}
 	
