@@ -76,6 +76,26 @@ services:
       redis:
         condition: service_started
 
+  # Аналитическая колоночная СУБД для финтех-логов Саги
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8-alpine
+    container_name: void-clickhouse
+    restart: always
+    ports:
+      - "8123:8123" # HTTP интерфейс (для нашего Node.js сервиса и Angular)
+      - "9000:9000" # Нативный клиентский протокол
+    environment:
+      - CLICKHOUSE_USER=void_analytics
+      - CLICKHOUSE_PASSWORD=analytics_password
+      - CLICKHOUSE_DB=void_analytics_db
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8123/ping || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
+  clickhouse_data:
