@@ -1,0 +1,9 @@
+{
+  "name": "@void/analytics-logs-collector",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "start": "node src/app.js"
+  }
+}
