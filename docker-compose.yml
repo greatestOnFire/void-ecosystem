@@ -93,10 +93,28 @@ services:
       # 🟢 Пробрасываем скрипт инициализации аналитических таблиц
       - ./infra/clickhouse/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:8123/ping || exit 1"]
+      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
       interval: 5s
       timeout: 5s
       retries: 5
+
+  analytics-logs-collector:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: void-analytics-logs-collector
+    command: npm start -w @void/analytics-logs-collector
+    environment:
+      - REDIS_HOST=redis
+      - CLICKHOUSE_HOST=http://clickhouse:8123
+      - CLICKHOUSE_USER=void_analytics
+      - CLICKHOUSE_PASSWORD=analytics_password
+      - CLICKHOUSE_DB=void_analytics_db
+    depends_on:
+      redis:
+        condition: service_started
+      clickhouse:
+        condition: service_healthy # 🟢 Ждем, пока ClickHouse пройдет внутренний healthcheck и развернет наши таблицы!
 
 volumes:
   postgres_data:
