@@ -10,8 +10,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: void_password
       POSTGRES_DB: void_db
-    ports:
-      - "5433:5432"
+    networks:
+      - void-secure-backend
     volumes:
       - postgres_data:/var/lib/postgresql/data
       # Сюда мы положим скрипт инициализации таблиц
@@ -27,8 +27,8 @@ services:
     image: redis:7-alpine
     container_name: void-redis
     restart: always
-    ports:
-      - "6379:6379"
+    networks:
+      - void-secure-backend
 
   auth-service:
     build:
@@ -52,6 +52,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+    networks:
+      - void-secure-backend
+      - void-public-edge
 
 
   payment-gateway:
@@ -75,19 +78,45 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+    networks:
+      - void-secure-backend
+      - void-public-edge
+
+  marketplace-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: void-marketplace-service
+    command: npm start -w @void/marketplace-service
+    ports:
+      - "3002:3002" # Выставляем API маркетплейса для Next.js фронтенда
+    environment:
+      - PORT=3002
+      - DB_HOST=postgres
+      - DB_PORT=5432 # Нативный внутренний порт Postgres в защищенной сети
+      - DB_USER=postgres
+      - DB_PASSWORD=void_password
+      - DB_NAME=void_db
+      - REDIS_HOST=redis
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - void-secure-backend
+      - void-public-edge
+
 
   # Аналитическая колоночная СУБД для финтех-логов Саги
   clickhouse:
     image: clickhouse/clickhouse-server:24.8-alpine
     container_name: void-clickhouse
     restart: always
-    ports:
-      - "8123:8123" # HTTP интерфейс (для нашего Node.js сервиса и Angular)
-      - "9000:9000" # Нативный клиентский протокол
     environment:
       - CLICKHOUSE_USER=void_analytics
       - CLICKHOUSE_PASSWORD=analytics_password
       - CLICKHOUSE_DB=void_analytics_db
+    networks:
+      - void-secure-backend
     volumes:
       - clickhouse_data:/var/lib/clickhouse
       # 🟢 Пробрасываем скрипт инициализации аналитических таблиц
@@ -115,7 +144,16 @@ services:
         condition: service_started
       clickhouse:
         condition: service_healthy # 🟢 Ждем, пока ClickHouse пройдет внутренний healthcheck и развернет наши таблицы!
+    networks:
+      - void-secure-backend
+      - void-public-edge
 
 volumes:
   postgres_data:
   clickhouse_data:
+
+networks:
+  void-secure-backend:
+    driver: bridge
+  void-public-edge:
+    driver: bridge
