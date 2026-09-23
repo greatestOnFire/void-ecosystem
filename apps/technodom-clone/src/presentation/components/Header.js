@@ -3,8 +3,6 @@
 import React from 'react';
 import { useCartStore } from '@/application/cart.store.js';
 
-import './components/header';
-
 /**
  * UI-компонент верхней навигационной панели (Шапки) маркетплейса.
  * Выводит фирменный лог и реактивный счетчик товаров в корзине.
