@@ -1,6 +1,7 @@
 import { MarketplaceApiClient } from "@/application/api.client.js";
 import { Header } from "@/presentation/components/Header.js";
 import { ProductList } from "@/presentation/components/ProductList.js";
+import {CartModal} from "@/presentation/components/CartModal.js";
 
 /**
  * Главная страница маркетплейса Technodom Clone.
@@ -12,7 +13,10 @@ export default function Home() {
   return (
       <main>
         <Header/>
-        <ProductList apiClient={apiClient} />
+        <div className={'main-layout'}>
+          <CartModal/>
+          <ProductList apiClient={apiClient} />
+        </div>
       </main>
   );
 }
