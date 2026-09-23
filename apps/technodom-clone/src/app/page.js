@@ -1,4 +1,5 @@
 import { MarketplaceApiClient } from "@/application/api.client.js";
+import { Header } from "@/presentation/components/Header.js";
 import { ProductList } from "@/presentation/components/ProductList.js";
 
 /**
@@ -10,6 +11,7 @@ export default function Home() {
   
   return (
       <main>
+        <Header/>
         <ProductList apiClient={apiClient} />
       </main>
   );
