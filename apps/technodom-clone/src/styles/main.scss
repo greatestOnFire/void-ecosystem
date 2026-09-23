@@ -1,7 +1,9 @@
 @import './abstracts/_variables';
 @import './abstracts/_mixins';
+@import "./components/header";
 @import './components/product-card';
 @import './components/product-list';
+@import './components/cart-modal';
 
 * {
   box-sizing: border-box;
