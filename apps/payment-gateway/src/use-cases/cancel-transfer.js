@@ -64,17 +64,11 @@ export class CancelTransfer {
 			await client.query(decQuery.sql, decQuery.params);
 			await client.query(incQuery.sql, incQuery.params);
 			
-			// Фиксируем транзакцию типа TRANSFER с пометкой возврата
-			// В enterprise-системах тип кодируется как REVERSAL, но сущность Transaction требует DEPOSIT/WITHDRAW/TRANSFER.
-			// Мы передаем оригинальный reference_id для сквозной аналитики
+			// Фиксируем компенсирующую транзакцию типа TRANSFER со сквозным reference_id оригинального заказа
 			const tx = new Transaction({ walletId: toWalletId, amount, type: 'TRANSFER' });
-			const txQuery = this.#transactionRepo.save(tx, 'COMPLETED');
+			const txQuery = this.#transactionRepo.save(tx, 'COMPLETED', originalReferenceId);
 			
-			// Напрямую добавляем reference_id в SQL-запрос для Саги
-			const modifiedSql = txQuery.sql.replace(');', ', reference_id);').replace(');', `, $5);`);
-			txQuery.params.push(originalReferenceId);
-			
-			await client.query(modifiedSql, txQuery.params);
+			await client.query(txQuery.sql, txQuery.params);
 			await client.query('COMMIT');
 			
 			return { success: true };
