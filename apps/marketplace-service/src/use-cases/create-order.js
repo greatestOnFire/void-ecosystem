@@ -75,7 +75,7 @@ export class CreateOrder {
 				type: 'PROCESS_TRANSFER',
 				payload: {
 					amount: totalAmount,
-					originalReferenceId: productId,
+					originalReferenceId: orderId,
 				}
 			})
 			

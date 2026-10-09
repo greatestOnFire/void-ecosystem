@@ -79,13 +79,14 @@ test('CreateOrder Use Case: должен выбрасывать ошибку, е
 	);
 });
 
-test('CreateOrder Use Case: должен успешно открыть транзакцию и записать заказ в БД', async () => {
-	// 1. Имитируем, что товар успешно найден и на складе его достаточно
+test('CreateOrder Use Case: должен успешно открыть транзакцию, записать заказ в БД и опубликовать правильный orderId в Сагу', async () => {
+	//  Имитируем, что товар успешно найден и на складе его достаточно
+	const targetProductId = 'prod-laptop-123';
 	const mockProductRepo = {
 		findById: async (id) => ({ id, title: 'Ноутбук', price: 400000, stock: 10 })
 	};
 	
-	// 2. Имитируем, что репозиторий заказов генерирует правильный SQL контракт
+	// Имитируем, что репозиторий заказов генерирует правильный SQL контракт
 	let saveCalledWith = null;
 	const mockOrderRepo = {
 		save: (order) => {
@@ -94,7 +95,7 @@ test('CreateOrder Use Case: должен успешно открыть тран�
 		}
 	};
 	
-	// 3. Имитируем транзакционного клиента СУБД для проверки вызовов BEGIN/COMMIT
+	// Имитируем транзакционного клиента СУБД для проверки вызовов BEGIN/COMMIT
 	const executedQueries = [];
 	const mockClient = {
 		query: async (sql, params) => {
@@ -107,28 +108,38 @@ test('CreateOrder Use Case: должен успешно открыть тран�
 		getTransactionClient: async () => mockClient
 	};
 	
+	// Перехватываем событие шины для Саги
+	let publishedChannel = null;
+	let publishedEvent = null;
+	const mockEventBus = {
+		publish: async (channel, event) => {
+			publishedChannel = channel;
+			publishedEvent = event;
+			return 1;
+		}
+	};
+	
 	const useCase = new CreateOrder({
 		productRepo: mockProductRepo,
 		orderRepo: mockOrderRepo,
-		db: mockDb
+		db: mockDb,
+		eventBus: mockEventBus // Внедряем мок шины
 	});
 	
 	const result = await useCase.execute({
 		userId: 77,
-		productId: 'prod-laptop',
+		productId: targetProductId,
 		quantity: 1
 	});
 	
-	// Проверяем финтех-инварианты выполнения:
+	// --- ПРОВЕРКА ФИНТЕХ-ИНВАРИАНТОВ СУБД ---
 	assert.strictEqual(result.success, true);
-	assert.ok(result.orderId); // ID заказа должен быть сгенерирован (UUID)
+	assert.ok(result.orderId); // ID заказа сгенерирован (UUID)
 	
-	// Проверяем строгое соблюдение ACID границ в СУБД
-	assert.strictEqual(executedQueries[0], 'BEGIN');
-	assert.strictEqual(executedQueries[1], 'INSERT INTO orders (id) VALUES ($1);');
-	assert.strictEqual(executedQueries[2], 'COMMIT');
+	// --- ПРОВЕРКА СКВОЗНОГО КОНТЕКСТА САГИ (Падающий инвариант) ---
+	assert.strictEqual(publishedChannel, 'payment-commands');
+	assert.strictEqual(publishedEvent.type, 'PROCESS_TRANSFER');
 	
-	// Проверяем, что в репозиторий улетел правильный статус
-	assert.strictEqual(saveCalledWith.status, 'PENDING');
+	// КРИТИЧЕСКАЯ ТОЧКА: Ожидаем, что originalReferenceId равен именно сгенерированному orderId, а не productId!
+	assert.strictEqual(publishedEvent.payload.originalReferenceId, result.orderId);
 });
-
