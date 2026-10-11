@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useCartStore } from '@/application/cart.store.js';
+import {store} from "next/dist/build/output/store.js";
 
 /**
  * UI-компонент модального окна корзины.
@@ -13,11 +14,22 @@ import { useCartStore } from '@/application/cart.store.js';
 export function CartModal() {
 	const items = useCartStore((state) => state.items);
 	const totalPrice = useCartStore((state) => state.totalPrice);
+	const checkout = useCartStore((state) => state.checkout);
 	
 	if (items.length === 0) {
 		return <div className="cart-modal">Корзина пуста</div>;
 	}
 	
+	const handleCheckout = async () => {
+		if (items.length > 0) {
+			const firstItem = store.items[0];
+			await checkout({
+				userId: 42,
+				productId: firstItem.product.id,
+				quantity: firstItem.quantity
+			});
+		}
+	}
 	
 	return (
 			<section className="cart-modal">
@@ -33,7 +45,11 @@ export function CartModal() {
 					))}
 				</div>
 				<div className="cart-modal__total">Итого: {totalPrice} KZT</div>
-				<button className="cart-modal__checkout-btn">Оформить заказ</button>
+				<button
+						onClick={handleCheckout}
+						className="cart-modal__checkout-btn">
+							Оформить заказ
+				</button>
 			</section>
 	);
 }
