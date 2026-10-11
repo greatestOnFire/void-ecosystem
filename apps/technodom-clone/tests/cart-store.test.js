@@ -23,3 +23,32 @@ test('Zustand Cart Store: должен управлять состоянием �
 	assert.strictEqual(updatedState.items[0].quantity, 2);
 	assert.strictEqual(updatedState.totalPrice, 600000);
 });
+
+
+test('Zustand Cart Store: экшен checkout должен отправлять данные на BFF и возвращать успех', async () => {
+	const originalFetch = global.fetch;
+	let fetchedUrl = '';
+	let fetchedOptions = null;
+	
+	global.fetch = async (url, options) => {
+		fetchedUrl = url;
+		fetchedOptions = options;
+		return {
+			status: 201,
+			ok: true,
+			json: async () => ({ success: true, orderId: 'order-uuid-999' })
+		};
+	};
+	
+	const store = useCartStore.getState();
+	const result = await store.checkout({ userId: 42, productId: 'prod-abc', quantity: 1 });
+	
+	assert.strictEqual(fetchedUrl, '/api/bff/orders');
+	assert.strictEqual(fetchedOptions.method, 'POST');
+	assert.deepStrictEqual(JSON.parse(fetchedOptions.body), { userId: 42, productId: 'prod-abc', quantity: 1 });
+	assert.strictEqual(result.success, true);
+	assert.strictEqual(result.orderId, 'order-uuid-999');
+	
+	global.fetch = originalFetch;
+});
+

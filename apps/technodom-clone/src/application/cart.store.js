@@ -2,10 +2,24 @@ import { create } from 'zustand';
 import { Cart } from '../domain/cart.domain.js';
 
 /**
+ * @typedef {Object} CheckoutInput
+ * @property {number} userId - Уникальный идентификатор пользователя
+ * @property {string} productId - Идентификатор оформляемого товара
+ * @property {number} quantity - Количество товара
+ */
+
+/**
+ * @typedef {Object} CheckoutResult
+ * @property {boolean} success - Статус успешности операции
+ * @property {string} orderId - Сгенерированный UUID заказа
+ */
+
+/**
  * @typedef {Object} CartState
  * @property {import('../domain/cart.domain.js').CartItem[]} items - Список элементов в корзине
  * @property {number} totalPrice - Общая стоимость корзины
  * @property {function(import('../domain/product.entity.js').Product, number): void} addItem - Экшен добавления товара
+ * @property {function(CheckoutInput): Promise<CheckoutResult>} checkout - Асинхронный экшен оформления заказа через BFF
  */
 
 /**
@@ -18,21 +32,29 @@ export const useCartStore = create((set, get) => ({
 	totalPrice: 0,
 	
 	addItem: (product, quantity) => {
-		// 1. Инициализируем доменный класс Cart текущими элементами из стейта
 		const cartDomain = new Cart();
 		
-		// Переносим старые элементы из стейта Zustand в доменную модель корзины,
-		// чтобы не потерять то, что уже добавлено
 		get().items.forEach(item => {
 			cartDomain.addItem(item.product, item.quantity);
 		});
 		
-		// 2. Вызываем доменный метод (бизнес-логика, которую ты написал!)
 		cartDomain.addItem(product, quantity);
 		
 		set({
 			items: cartDomain.items,
 			totalPrice: cartDomain.totalPrice,
 		});
+	},
+	
+	checkout: async ({ userId, productId, quantity }) => {
+		const response = await fetch('/api/bff/orders', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ userId, productId, quantity }),
+		});
+		
+		return await response.json();
 	}
 }));
