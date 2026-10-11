@@ -47,3 +47,30 @@ test('Next.js BFF Route: POST /api/bff/orders должен успешно про
 	// Восстанавливаем fetch
 	global.fetch = originalFetch;
 });
+
+
+test('Next.js BFF Route: GET /api/bff/products должен успешно проксировать каталог товаров', async () => {
+	const mockCoreProducts = [{ id: 'p-1', title: 'Смартфон', price: 500000, stock: 5 }];
+	const originalFetch = global.fetch;
+	let fetchedUrl = '';
+	
+	global.fetch = async (url) => {
+		fetchedUrl = url;
+		return {
+			status: 200,
+			ok: true,
+			json: async () => mockCoreProducts
+		};
+	};
+	
+	const { GET } = await import('../src/app/api/bff/products/route.js');
+	const response = await GET();
+	const responseData = await response.json();
+	
+	assert.strictEqual(fetchedUrl, 'http://localhost:3002/api/products');
+	assert.strictEqual(response.status, 200);
+	assert.strictEqual(responseData[0].title, 'Смартфон');
+	
+	global.fetch = originalFetch;
+});
+
