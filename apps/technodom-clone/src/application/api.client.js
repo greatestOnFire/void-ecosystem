@@ -19,13 +19,13 @@ export class MarketplaceApiClient {
 	 * @returns {Promise} Массив доменных сущностей товаров
 	 */
 	async getProducts() {
-		// Шаг 1: Дожидаемся самого сетевого ответа от сервера
-		const response = await fetch(`${this.#baseUrl}/api/products`);
+		// Дожидаемся самого сетевого ответа от сервера
+		const response = await fetch(`${this.#baseUrl}/api/bff/products`);
 		
-		// Шаг 2: Дожидаемся, пока Node.js распарсит тело ответа в сырой массив объектов
+		// Дожидаемся, пока Node.js распарсит тело ответа в сырой массив объектов
 		const rawProducts = await response.json();
 		
-		// Шаг 3: Мапим сырые объекты в доменные сущности и СРАЗУ возвращаем результат!
+		// Мапим сырые объекты в доменные сущности и СРАЗУ возвращаем результат!
 		return rawProducts.map(data => new Product({
 			id: data.id,
 			title: data.title,

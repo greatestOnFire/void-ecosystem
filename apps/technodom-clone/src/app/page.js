@@ -8,7 +8,7 @@ import {CartModal} from "@/presentation/components/CartModal.js";
  * Слой: Presentation (Page Server Component)
  */
 export default function Home() {
-  const apiClient = new MarketplaceApiClient('http://localhost:3002');
+  const apiClient = new MarketplaceApiClient('');
   
   return (
       <main>

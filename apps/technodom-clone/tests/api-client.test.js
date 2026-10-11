@@ -12,14 +12,14 @@ test('Marketplace API Client: должен успешно запрашивать
 	// Перехватываем глобальный fetch
 	const originalFetch = global.fetch;
 	global.fetch = async (url) => {
-		assert.ok(url.includes('/api/products'));
+		assert.ok(url.includes('/api/bff/products'));
 		return {
 			ok: true,
 			json: async () => mockProductsResponse
 		};
 	};
 	
-	const apiClient = new MarketplaceApiClient('http://localhost:3002');
+	const apiClient = new MarketplaceApiClient('');
 	const products = await apiClient.getProducts();
 	
 	assert.strictEqual(products.length, 1);
