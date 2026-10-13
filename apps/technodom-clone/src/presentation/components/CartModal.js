@@ -2,13 +2,9 @@
 
 import React from 'react';
 import { useCartStore } from '@/application/cart.store.js';
-import {store} from "next/dist/build/output/store.js";
 
 /**
  * UI-компонент модального окна корзины.
- * Отображает список выбранных доменных товаров и итоговую финтех-стоимость.
- * Слой: Presentation (Client Component)
- *
  * @returns {React.JSX.Element}
  */
 export function CartModal() {
@@ -22,14 +18,14 @@ export function CartModal() {
 	
 	const handleCheckout = async () => {
 		if (items.length > 0) {
-			const firstItem = store.items[0];
+			const firstItem = items[0];
 			await checkout({
 				userId: 42,
 				productId: firstItem.product.id,
 				quantity: firstItem.quantity
 			});
 		}
-	}
+	};
 	
 	return (
 			<section className="cart-modal">
@@ -45,10 +41,8 @@ export function CartModal() {
 					))}
 				</div>
 				<div className="cart-modal__total">Итого: {totalPrice} KZT</div>
-				<button
-						onClick={handleCheckout}
-						className="cart-modal__checkout-btn">
-							Оформить заказ
+				<button onClick={handleCheckout} className="cart-modal__checkout-btn">
+					Оформить заказ
 				</button>
 			</section>
 	);
