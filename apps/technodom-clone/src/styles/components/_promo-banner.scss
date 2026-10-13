@@ -1,0 +1,75 @@
+.promo-banner {
+  background: linear-gradient(135deg, #1e1e1e 0%, #3a3a3a 100%);
+  border-radius: 16px;
+  margin: 24px auto 0 auto;
+  max-width: 1200px;
+  width: calc(100% - 48px);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+
+  &__wrapper {
+    padding: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+  }
+
+  &__content {
+    max-width: 600px;
+  }
+
+  &__badge {
+    background-color: $color-primary;
+    color: $color-bg;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-bottom: 16px;
+  }
+
+  &__title {
+    color: $color-bg;
+    font-size: 36px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+
+  &__subtitle {
+    color: #cccccc;
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 24px;
+  }
+
+  &__btn {
+    background-color: $color-bg;
+    color: $color-text;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      background-color: $color-gray-light;
+      transform: translateY(-1px);
+    }
+  }
+
+  &__image-mock {
+    font-size: 4rem;
+    user-select: none;
+    display: none;
+
+    @media (min-width: 768px) {
+      display: block;
+    }
+  }
+}

@@ -1,0 +1,45 @@
+.sidebar {
+  width: 100%;
+  max-width: 260px;
+  background-color: $color-bg;
+  border: 1px solid $color-gray-light;
+  border-radius: 12px;
+  padding: 16px;
+  height: fit-content;
+  display: none;
+
+  @media (min-width: 1024px) {
+    display: block;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    list-style: none;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      background-color: $color-gray-light;
+      color: $color-primary;
+    }
+  }
+
+  &__item-icon {
+    font-size: 18px;
+  }
+
+  &__item-name {
+    font-size: 14px;
+    font-weight: 600;
+  }
+}
