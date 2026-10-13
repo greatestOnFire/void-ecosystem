@@ -6,17 +6,20 @@
   width: calc(100% - 48px);
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  position: relative;
 
   &__wrapper {
-    padding: 40px;
+    padding: 40px 64px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 24px;
+    min-height: 280px;
   }
 
   &__content {
     max-width: 600px;
+    flex-grow: 1;
   }
 
   &__badge {
@@ -24,16 +27,17 @@
     color: $color-bg;
     padding: 6px 12px;
     border-radius: 20px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     display: inline-block;
     margin-bottom: 16px;
+    letter-spacing: 0.5px;
   }
 
   &__title {
     color: $color-bg;
-    font-size: 36px;
+    font-size: 32px;
     font-weight: 800;
     margin-bottom: 12px;
     letter-spacing: -0.5px;
@@ -41,7 +45,7 @@
 
   &__subtitle {
     color: #cccccc;
-    font-size: 16px;
+    font-size: 15px;
     line-height: 1.5;
     margin-bottom: 24px;
   }
@@ -64,12 +68,72 @@
   }
 
   &__image-mock {
-    font-size: 4rem;
+    font-size: 5rem;
     user-select: none;
     display: none;
+    width: 120px;
+    text-align: center;
 
     @media (min-width: 768px) {
       display: block;
+    }
+  }
+
+  &__arrow {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 24px;
+    line-height: 38px;
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: background 0.2s ease;
+    z-index: 2;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    &--prev {
+      left: 16px;
+    }
+
+    &--next {
+      right: 16px;
+    }
+  }
+
+  &__dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    position: absolute;
+    bottom: 16px;
+    width: 100%;
+    z-index: 2;
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.6);
+    }
+
+    &--active {
+      background-color: $color-primary;
+      width: 24px;
+      border-radius: 4px;
     }
   }
 }
