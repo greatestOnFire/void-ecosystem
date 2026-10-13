@@ -25,6 +25,10 @@
     text-transform: uppercase;
   }
 
+  &__cart-wrapper {
+    position: relative;
+  }
+
   &__cart-button {
     background-color: $color-bg;
     color: $color-text;

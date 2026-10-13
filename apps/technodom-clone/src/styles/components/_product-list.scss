@@ -9,15 +9,13 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  // На десктопе при 3 колонках в main-layout фиксируем 2 колонки товаров
   @media (min-width: 1024px) {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     padding: 0;
   }
 
-  // На широких мониторах расширяем максимум до 3 колонок товаров
-  @media (min-width: 1400px) {
-    grid-template-columns: repeat(3, 1fr);
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(4, 1fr);
   }
 
   &__loading, &__error {
