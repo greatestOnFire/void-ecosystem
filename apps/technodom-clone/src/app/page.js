@@ -2,7 +2,6 @@ import { Header } from "@/presentation/components/Header.js";
 import { PromoBanner } from "@/presentation/components/PromoBanner.js";
 import { Sidebar } from "@/presentation/components/Sidebar.js";
 import { ProductList } from "@/presentation/components/ProductList.js";
-import { CartModal } from "@/presentation/components/CartModal.js";
 
 /**
  * Главная страница маркетплейса Technodom Clone.
@@ -17,7 +16,6 @@ export default function Home() {
           <div className="main-layout">
             <Sidebar />
             <ProductList />
-            <CartModal />
           </div>
         </div>
       </main>
