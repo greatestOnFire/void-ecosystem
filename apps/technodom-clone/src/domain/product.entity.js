@@ -37,6 +37,14 @@ export class Product {
 	get stock() { return this.#stock; }
 	
 	/**
+	 * Геттер для расчета стоимости ежемесячного платежа в рассрочку на 24 месяца
+	 * @returns {number} Ежемесячный платеж в KZT
+	 */
+	get installmentPrice() {
+		return Math.floor(this.#price / 24);
+	}
+	
+	/**
 	 * Валидация наименования
 	 * @param {string} title
 	 * @private

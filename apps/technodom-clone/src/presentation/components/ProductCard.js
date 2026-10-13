@@ -21,7 +21,7 @@ export function ProductCard({ product }) {
 		addItem(product, 1);
 	};
 	
-	const installmentPrice = Math.floor(product.price / 24);
+	const installmentPrice = product.installmentPrice;
 	
 	return (
 			<article className="product-card">

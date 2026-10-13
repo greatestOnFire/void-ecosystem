@@ -40,12 +40,14 @@ test('Product Entity: должен выбрасывать ошибку при п
 	});
 });
 
-test('Product Installment: verify monthly payment installment calculation for 24 months', () => {
-	const productPrice = 240000;
-	const months = 24;
-	const expectedInstallment = 10000;
+test('Product Installment: verify monthly payment installment calculation for 24 months via domain entity', () => {
+	const product = new Product({
+		id: 'prod-test',
+		title: 'Тестовый товар',
+		price: 240000,
+		stock: 5
+	});
 	
-	const calculated = Math.floor(productPrice / months);
-	
-	assert.strictEqual(calculated, expectedInstallment);
+	assert.strictEqual(product.installmentPrice, 10000);
 });
+
