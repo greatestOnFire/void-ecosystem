@@ -1,24 +1,22 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useProductsQueryContract } from '../../application/products.query.js';
+import { MarketplaceApiClient } from '@/application/api.client.js';
+import { useProductsQueryContract } from '@/application/products.query.js';
 import { ProductCard } from './ProductCard.js';
-
-/**
- * @typedef {Object} ProductListProps
- * @property {import('../../application/api.client.js').MarketplaceApiClient} apiClient - Экземпляр сетевого API-клиента
- */
 
 /**
  * UI-компонент сетки каталога товаров.
  * Оркеструет серверный стейт TanStack Query и рендеринг карточек.
  * Слой: Presentation (Client Component)
  *
- * @param {ProductListProps} props
- * @returns {React.JSX.Element}
+ * @returns {JSX.Element}
  */
-export function ProductList({ apiClient }) {
+export function ProductList() {
+	// Инициализируем клиент один раз на стороне браузера (Client Side)
+	const [apiClient] = useState(() => new MarketplaceApiClient(''));
+	
 	const { data: products, isLoading, isError, error } = useQuery(
 			useProductsQueryContract(apiClient)
 	);
