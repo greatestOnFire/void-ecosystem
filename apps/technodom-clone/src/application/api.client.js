@@ -19,18 +19,19 @@ export class MarketplaceApiClient {
 	 * @returns {Promise} Массив доменных сущностей товаров
 	 */
 	async getProducts() {
-		// Дожидаемся самого сетевого ответа от сервера
 		const response = await fetch(`${this.#baseUrl}/api/bff/products`);
-		
-		// Дожидаемся, пока Node.js распарсит тело ответа в сырой массив объектов
 		const rawProducts = await response.json();
 		
-		// Мапим сырые объекты в доменные сущности и СРАЗУ возвращаем результат!
+		// Защитный инвариант: если бэк вернул ошибку или не массив, выбрасываем исключение для TanStack Query
+		if (!Array.isArray(rawProducts)) {
+			throw new Error(rawProducts.error || 'Invalid server response contract');
+		}
+		
 		return rawProducts.map(data => new Product({
 			id: data.id,
 			title: data.title,
-			price: data.price,
-			stock: data.stock
+			price: Number(data.price),
+			stock: Number(data.stock)
 		}));
 	}
 }
