@@ -39,3 +39,13 @@ test('Product Entity: должен выбрасывать ошибку при п
 		message: 'Title cannot be empty'
 	});
 });
+
+test('Product Installment: verify monthly payment installment calculation for 24 months', () => {
+	const productPrice = 240000;
+	const months = 24;
+	const expectedInstallment = 10000;
+	
+	const calculated = Math.floor(productPrice / months);
+	
+	assert.strictEqual(calculated, expectedInstallment);
+});

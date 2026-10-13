@@ -11,9 +11,6 @@ import { Product } from '../../domain/product.entity.js';
 
 /**
  * UI-компонент карточки товара в каталоге.
- * Слой: Presentation (Client Component)
- * Методология: БЭМ (Стилизуется через класс .product-card)
- *
  * @param {ProductCardProps} props
  * @returns {React.JSX.Element}
  */
@@ -22,14 +19,19 @@ export function ProductCard({ product }) {
 	
 	const handleAddToCart = () => {
 		addItem(product, 1);
-	}
+	};
+	
+	const installmentPrice = Math.floor(product.price / 24);
 	
 	return (
 			<article className="product-card">
-				{/* Имитация изображения товара (финтех-заглушка) */}
 				<div className="product-card__image-placeholder">🛒</div>
 				<h3 className="product-card__title">{product.title}</h3>
-				<p className="product-card__price">{`${product.price} KZT`}</p>
+				<div className="product-card__installment">
+					<span className="product-card__installment-badge">В рассрочку</span>
+					<span className="product-card__installment-value">{`от ${installmentPrice.toLocaleString()} ₸/мес x 24`}</span>
+				</div>
+				<p className="product-card__price">{`${product.price.toLocaleString()} KZT`}</p>
 				<button className="product-card__button" onClick={handleAddToCart}>
 					В корзину
 				</button>
