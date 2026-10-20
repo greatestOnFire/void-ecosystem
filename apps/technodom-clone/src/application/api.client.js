@@ -22,7 +22,6 @@ export class MarketplaceApiClient {
 		const response = await fetch(`${this.#baseUrl}/api/bff/products`);
 		const rawProducts = await response.json();
 		
-		// Защитный инвариант: если бэк вернул ошибку или не массив, выбрасываем исключение для TanStack Query
 		if (!Array.isArray(rawProducts)) {
 			throw new Error(rawProducts.error || 'Invalid server response contract');
 		}
@@ -33,5 +32,26 @@ export class MarketplaceApiClient {
 			price: Number(data.price),
 			stock: Number(data.stock)
 		}));
+	}
+	
+	/**
+	 * Запрос одного товара по ID с сервера
+	 * @param {string} id - Уникальный UUID товара
+	 * @returns {Promise} Доменная сущность товара
+	 */
+	async getProductById(id) {
+		const response = await fetch(`${this.#baseUrl}/api/bff/products/${id}`);
+		const rawProduct = await response.json();
+		
+		if (!rawProduct || rawProduct.error) {
+			throw new Error(rawProduct?.error || 'Product fetch contract mismatch');
+		}
+		
+		return new Product({
+			id: rawProduct.id,
+			title: rawProduct.title,
+			price: Number(rawProduct.price),
+			stock: Number(rawProduct.stock)
+		});
 	}
 }

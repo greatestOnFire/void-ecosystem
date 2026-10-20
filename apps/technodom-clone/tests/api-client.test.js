@@ -32,3 +32,30 @@ test('Marketplace API Client: должен успешно запрашивать
 	// Восстанавливаем оригинальный fetch
 	global.fetch = originalFetch;
 });
+
+
+test('Marketplace API Client: должен успешно запрашивать один товар по ID и мапить на доменную сущность', async () => {
+	const targetId = 'prod-tv-777';
+	const mockProductResponse = { id: targetId, title: 'Телевизор Sony', price: 400000, stock: 5 };
+	
+	const originalFetch = global.fetch;
+	let fetchedUrl = '';
+	
+	global.fetch = async (url) => {
+		fetchedUrl = url;
+		return {
+			ok: true,
+			json: async () => mockProductResponse
+		};
+	};
+	
+	const apiClient = new MarketplaceApiClient('');
+	const product = await apiClient.getProductById(targetId);
+	
+	assert.strictEqual(fetchedUrl, `/api/bff/products/${targetId}`);
+	assert.strictEqual(product.id, targetId);
+	assert.strictEqual(product.title, 'Телевизор Sony');
+	assert.strictEqual(product.constructor.name, 'Product');
+	
+	global.fetch = originalFetch;
+});
