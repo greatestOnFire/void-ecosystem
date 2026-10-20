@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { useCartStore } from '../../application/cart.store.js';
 import { Product } from '../../domain/product.entity.js';
 
@@ -17,7 +18,8 @@ import { Product } from '../../domain/product.entity.js';
 export function ProductCard({ product }) {
 	const addItem = useCartStore((state) => state.addItem);
 	
-	const handleAddToCart = () => {
+	const handleAddToCart = (e) => {
+		e.preventDefault();
 		addItem(product, 1);
 	};
 	
@@ -25,8 +27,11 @@ export function ProductCard({ product }) {
 	
 	return (
 			<article className="product-card">
-				<div className="product-card__image-placeholder">🛒</div>
-				<h3 className="product-card__title">{product.title}</h3>
+				<Link href={`/product/${product.id}`} className="product-card__link">
+					<div className="product-card__image-placeholder">🛒</div>
+					<h3 className="product-card__title">{product.title}</h3>
+				</Link>
+				
 				<div className="product-card__installment">
 					<span className="product-card__installment-badge">В рассрочку</span>
 					<span className="product-card__installment-value">{`от ${installmentPrice.toLocaleString()} ₸/мес x 24`}</span>

@@ -9,6 +9,19 @@
   position: relative;
   overflow: hidden;
 
+  &__link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    width: 100%;
+
+    &:hover {
+      .product-card__title {
+        color: $color-primary;
+      }
+    }
+  }
+
   &:hover {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
     border-color: rgba($color-primary, 0.3);
