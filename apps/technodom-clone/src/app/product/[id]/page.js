@@ -1,29 +1,17 @@
 import React from 'react';
-import { MarketplaceApiClient } from '@/application/api.client.js';
 import { Header } from '@/presentation/components/Header.js';
 import { Footer } from '@/presentation/components/Footer.js';
-
+import { BuyButton } from '@/presentation/components/BuyButton.js';
 /**
  * Динамическая страница детального просмотра товара (Server Component).
- * Слой: Presentation (SSR Node.js Runtime)
- *
  * @param {Object} props
- * @param {Object} props.params - Динамические параметры пути Next.js
+ * @param {Object} props.params
  * @returns {Promise<React.JSX.Element>}
  */
 export default async function ProductDetailPage({ params }) {
-	// В Next.js 16/16+ params является асинхронным объектом, разворачиваем его деструктуризацией
 	const { id } = await params;
-	
-	// На сервере инициализируем клиент напрямую к порту бизнес-ядра маркетплейса
 	const marketplaceUrl = process.env.MARKETPLACE_SERVICE_URL || 'http://localhost:3002';
 	
-	// Создаем изолированный инстанс клиента для прямого серверного запроса (Transit SSR Route)
-	// Мы временно подменим базовый путь для серверного fetch, чтобы он шел напрямую в ядро /api/products
-	const serverApiClient = new MarketplaceApiClient(marketplaceUrl);
-	
-	// Точечно адаптируем вызов: на бэкенде путь устроен как /api/products/[id]
-	// Чтобы не плодить дублирующие методы, мы вызовем fetch напрямую к защищенному ядру СУБД
 	const response = await fetch(`${marketplaceUrl}/api/products/${id}`);
 	const rawProduct = await response.json();
 	
@@ -55,7 +43,9 @@ export default async function ProductDetailPage({ params }) {
 								<span className="product-detail__price-value">{`${Number(rawProduct.price).toLocaleString()} KZT`}</span>
 							</div>
 							
-							<button className="product-detail__buy-btn">Добавить в корзину</button>
+							<BuyButton
+									product={{ id: rawProduct.id, title: rawProduct.title, price: Number(rawProduct.price),
+										stock: Number(rawProduct.stock) }} />
 						</div>
 					</div>
 				</main>
