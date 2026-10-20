@@ -74,3 +74,33 @@ test('Next.js BFF Route: GET /api/bff/products должен успешно пр�
 	global.fetch = originalFetch;
 });
 
+
+test('Next.js BFF Route: GET /api/bff/products/[id] должен успешно проксировать деталь товара', async () => {
+	const targetId = 'prod-laptop-999';
+	const mockCoreProduct = { id: targetId, title: 'Продвинутый Ноутбук', price: 900000, stock: 2 };
+	const originalFetch = global.fetch;
+	let fetchedUrl = '';
+	
+	global.fetch = async (url) => {
+		fetchedUrl = url;
+		return {
+			status: 200,
+			ok: true,
+			json: async () => mockCoreProduct
+		};
+	};
+	
+	const { GET } = await import('../src/app/api/bff/products/[id]/route.js');
+	
+	const mockRequest = new Request(`http://localhost:3000/api/bff/products/${targetId}`);
+	const response = await GET(mockRequest, { params: { id: targetId } });
+	const responseData = await response.json();
+	
+	assert.strictEqual(fetchedUrl, `http://localhost:3002/api/products/${targetId}`);
+	assert.strictEqual(response.status, 200);
+	assert.strictEqual(responseData.title, 'Продвинутый Ноутбук');
+	
+	global.fetch = originalFetch;
+});
+
+
