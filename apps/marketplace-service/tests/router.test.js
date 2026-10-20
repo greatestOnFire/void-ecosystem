@@ -83,3 +83,34 @@ test('Marketplace Router: должен возвращать 201 и orderId пр�
 	const responseData = JSON.parse(res.body);
 	assert.strictEqual(responseData.orderId, 'generated-order-uuid-999');
 });
+
+test('Marketplace Router: должен возвращать 200 и объект товара при динамическом GET /api/products/[id]', async () => {
+	const targetId = '8ca5c4eb-73fa-4df6-880c-7b44747eb224';
+	const req = { method: 'GET', url: `/api/products/${targetId}` };
+	const res = {
+		statusCode: 0,
+		headers: {},
+		body: '',
+		writeHead(code, headers) {
+			this.statusCode = code;
+			this.headers = headers;
+		},
+		end(data) { this.body = data; }
+	};
+	
+	let findByIdCalledWith = null;
+	const mockContext = {
+		productRepo: {
+			findById: async (id) => {
+				findByIdCalledWith = id;
+				return { id, title: 'Защищенный Смартфон', price: 500000, stock: 5 };
+			}
+		}
+	};
+	
+	await router(req, res, mockContext);
+	
+	assert.strictEqual(res.statusCode, 200);
+	assert.strictEqual(findByIdCalledWith, targetId);
+	assert.strictEqual(JSON.parse(res.body).title, 'Защищенный Смартфон');
+});
