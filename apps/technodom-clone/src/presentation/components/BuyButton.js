@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { useCartStore } from '../../application/cart.store.js';
+import { useCartStore } from '@/application/cart.store.js';
+import { Button } from "@/presentation/shared/Button.js";
 
 /**
  * Интерактивный клиентский компонент кнопки покупки для SSR страниц.
@@ -17,8 +18,9 @@ export function BuyButton({ product }) {
 	};
 	
 	return (
-			<button className="product-detail__buy-btn" onClick={handleAddToCart}>
-				Добавить в корзину
-			</button>
+			<Button
+					title="Добавить в корзину"
+					className="product-detail__buy-btn"
+					onClick={handleAddToCart}/>
 	);
 }

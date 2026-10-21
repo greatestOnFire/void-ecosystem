@@ -2,8 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useCartStore } from '../../application/cart.store.js';
-import { Product } from '../../domain/product.entity.js';
+import { useCartStore } from '@/application/cart.store.js';
+import { Product } from '@/domain/product.entity.js';
+import { Button } from "@/presentation/shared/Button.js";
 
 /**
  * @typedef {Object} ProductCardProps
@@ -37,9 +38,10 @@ export function ProductCard({ product }) {
 					<span className="product-card__installment-value">{`от ${installmentPrice.toLocaleString()} ₸/мес x 24`}</span>
 				</div>
 				<p className="product-card__price">{`${product.price.toLocaleString()} KZT`}</p>
-				<button className="product-card__button" onClick={handleAddToCart}>
-					В корзину
-				</button>
+				<Button
+								title="В корзину"
+								className="product-card__button"
+								onClick={handleAddToCart} />
 			</article>
 	);
 }
