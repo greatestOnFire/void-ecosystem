@@ -1,6 +1,4 @@
 import React from 'react';
-import { Header } from '@/presentation/components/Header.js';
-import { Footer } from '@/presentation/components/Footer.js';
 import { BuyButton } from '@/presentation/components/BuyButton.js';
 /**
  * Динамическая страница детального просмотра товара (Server Component).
@@ -21,7 +19,6 @@ export default async function ProductDetailPage({ params }) {
 	
 	return (
 			<div className="product-page-layout">
-				<Header />
 				<main className="product-detail">
 					<div className="product-detail__container">
 						<div className="product-detail__gallery">
@@ -49,7 +46,6 @@ export default async function ProductDetailPage({ params }) {
 						</div>
 					</div>
 				</main>
-				<Footer />
 			</div>
 	);
 }
