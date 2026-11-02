@@ -76,4 +76,18 @@ export class Product {
 			throw new Error('Stock must be a non-negative integer');
 		}
 	}
+	
+	/**
+	 * Преобразует доменную сущность в плоский DTO-объект для безопасной сериализации в Zustand/localStorage
+	 * @returns {Object} Plain JavaScript Object
+	 */
+	toDTO() {
+		return {
+			id: this.#id,
+			title: this.#title,
+			price: this.#price,
+			stock: this.#stock,
+			installmentPrice: this.installmentPrice
+		};
+	}
 }

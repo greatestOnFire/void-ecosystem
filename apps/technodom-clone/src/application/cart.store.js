@@ -19,7 +19,9 @@ export const useCartStore = create(
 							cartDomain.addItem(item.product, item.quantity);
 						});
 						
-						cartDomain.addItem(product, quantity);
+						// Если к нам прилетел экземпляр класса Product с методом toDTO, вызываем его
+						const productData = typeof product.toDTO === 'function' ? product.toDTO() : product;
+						cartDomain.addItem(productData, quantity);
 						
 						set({
 							items: cartDomain.items,
