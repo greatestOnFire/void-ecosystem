@@ -56,5 +56,7 @@ export const useCartStore = create((set, get) => ({
 		});
 		
 		return await response.json();
-	}
+	},
+	
+	clearCart: () => set({ items: [], totalPrice: 0 }),
 }));

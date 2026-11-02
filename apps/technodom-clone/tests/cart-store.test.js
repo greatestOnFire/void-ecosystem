@@ -52,3 +52,22 @@ test('Zustand Cart Store: экшен checkout должен отправлять 
 	global.fetch = originalFetch;
 });
 
+
+test('Zustand Cart Store: экшен clearCart должен полностью опустошать массив items и сбрасывать totalPrice', () => {
+	const tv = { id: 'prod-tv', title: 'Телевизор', price: 300000 };
+	
+	useCartStore.setState({ items: [], totalPrice: 0 });
+	
+	const storeBefore = useCartStore.getState();
+	storeBefore.addItem(tv, 1);
+	
+	const storeAfterAdd = useCartStore.getState();
+	assert.strictEqual(storeAfterAdd.items.length, 1);
+	
+	storeAfterAdd.clearCart();
+	
+	const storeFinal = useCartStore.getState();
+	assert.strictEqual(storeFinal.items.length, 0);
+	assert.strictEqual(storeFinal.totalPrice, 0);
+});
+
