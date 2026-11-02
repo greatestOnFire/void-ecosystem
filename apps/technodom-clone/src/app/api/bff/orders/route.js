@@ -5,7 +5,8 @@
  */
 export async function POST(request) {
 	try {
-		const body = await request.json();
+		
+		const rawTextBody = await request.text();
 		const marketplaceUrl = process.env.MARKETPLACE_SERVICE_URL || 'http://localhost:3002';
 		
 		const response = await fetch(`${marketplaceUrl}/api/orders`, {
@@ -13,11 +14,7 @@ export async function POST(request) {
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify({
-				userId: body.userId,
-				productId: body.productId,
-				quantity: body.quantity
-			})
+			body: rawTextBody
 		});
 		
 		const responseData = await response.json();
