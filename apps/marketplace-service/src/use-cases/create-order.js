@@ -54,7 +54,7 @@ export class CreateOrder {
 		const client = await this.#db.getTransactionClient();
 		
 		try {
-			await client.query('BEGIN')
+			await client.query('BEGIN');
 			
 			// Генерируем SQL-инструкцию через наш Data Mapper репозиторий
 			const insertQuery = this.#orderRepo.save({
