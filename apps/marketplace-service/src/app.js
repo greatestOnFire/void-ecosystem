@@ -19,7 +19,20 @@ const pool = new pg.Pool({
 	port: parseInt(process.env.DB_PORT || '5433', 10),
 	database: process.env.DB_NAME || 'void_db',
 });
-const db = { query: (text, params) => pool.query(text, params) };
+
+// Нативный транзакционный финтех-драйвер маркетплейса
+const db = {
+	query: (text, params) => pool.query(text, params),
+	
+	async getTransactionClient() {
+		const client = await pool.connect();
+		return {
+			query: (text, params) => client.query(text, params),
+			release: () => client.release()
+		};
+	}
+};
+
 
 const redis = new Redis({
 	host: process.env.REDIS_HOST || '127.0.0.1',
