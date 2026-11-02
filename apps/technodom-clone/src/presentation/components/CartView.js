@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useCartStore } from '../../application/cart.store.js';
+import { useCartStore } from '@/application/cart.store.js';
 import { Button } from '../shared/Button.js';
 import { InstallmentBadge } from '../shared/InstallmentBadge.js';
 
@@ -28,13 +28,13 @@ export function CartView() {
 			
 			if (result.success) {
 				alert(`Заказ успешно оформлен! ID: ${result.orderId}`);
-				
 				clearCart();
 			}
 		} catch (error) {
 			alert(`Ошибка финтех-чекаута: ${error.message}`);
 		}
 	};
+	
 	
 	if (items.length === 0) {
 		return <div className="cart-view__empty">Ваша корзина пуста. Вернитесь в каталог товаров.</div>;
