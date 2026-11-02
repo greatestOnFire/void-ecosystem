@@ -1,5 +1,6 @@
 import React from 'react';
 import { BuyButton } from '@/presentation/components/BuyButton.js';
+import { InstallmentBadge } from "@/presentation/shared/InstallmentBadge.js";
 /**
  * Динамическая страница детального просмотра товара (Server Component).
  * @param {Object} props
@@ -28,12 +29,7 @@ export default async function ProductDetailPage({ params }) {
 						<div className="product-detail__info">
 							<h1 className="product-detail__title">{rawProduct.title}</h1>
 							
-							<div className="product-detail__installment-card">
-								<span className="product-detail__installment-badge">Финтех-рассрочка</span>
-								<p className="product-detail__installment-text">
-									{`В рассрочку от ${Math.floor(Number(rawProduct.price) / 24).toLocaleString()} ₸/мес на 24 месяца`}
-								</p>
-							</div>
+							<InstallmentBadge price={Math.floor(Number(rawProduct.price) / 24)} />
 							
 							<div className="product-detail__price-block">
 								<span className="product-detail__price-label">Цена:</span>

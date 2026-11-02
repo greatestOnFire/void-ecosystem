@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useCartStore } from '@/application/cart.store.js';
 import { Product } from '@/domain/product.entity.js';
 import { Button } from "@/presentation/shared/Button.js";
+import { InstallmentBadge } from "@/presentation/shared/InstallmentBadge.js";
 
 /**
  * @typedef {Object} ProductCardProps
@@ -33,10 +34,7 @@ export function ProductCard({ product }) {
 					<h3 className="product-card__title">{product.title}</h3>
 				</Link>
 				
-				<div className="product-card__installment">
-					<span className="product-card__installment-badge">В рассрочку</span>
-					<span className="product-card__installment-value">{`от ${installmentPrice.toLocaleString()} ₸/мес x 24`}</span>
-				</div>
+				<InstallmentBadge price={installmentPrice} />
 				<p className="product-card__price">{`${product.price.toLocaleString()} KZT`}</p>
 				<Button
 								title="В корзину"
