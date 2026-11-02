@@ -20,7 +20,6 @@ const pool = new pg.Pool({
 	database: process.env.DB_NAME || 'void_db',
 });
 
-// Нативный транзакционный финтех-драйвер маркетплейса
 const db = {
 	query: (text, params) => pool.query(text, params),
 	
@@ -32,7 +31,6 @@ const db = {
 		};
 	}
 };
-
 
 const redis = new Redis({
 	host: process.env.REDIS_HOST || '127.0.0.1',
