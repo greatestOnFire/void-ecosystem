@@ -3,10 +3,6 @@
 import React from 'react';
 import { useCartStore } from '@/application/cart.store.js';
 
-/**
- * UI-компонент модального окна корзины в шапке маркетплейса.
- * @returns {React.JSX.Element}
- */
 export function CartModal() {
 	const items = useCartStore((state) => state.items);
 	const totalPrice = useCartStore((state) => state.totalPrice);
@@ -18,32 +14,17 @@ export function CartModal() {
 	}
 	
 	const handleCheckout = async () => {
-		if (items.length > 0) {
-			try {
-				const firstItem = items[0];
-				
-				let sessionUserId = localStorage.getItem('void_session_user_id');
-				if (!sessionUserId) {
-					sessionUserId = Math.floor(100000 + Math.random() * 900000).toString();
-					localStorage.setItem('void_session_user_id', sessionUserId);
-				}
-				
-				const result = await checkout({
-					userId: Number(sessionUserId),
-					productId: firstItem.product.id,
-					quantity: firstItem.quantity
-				});
-				
-				if (result.success) {
-					alert(`Заказ успешно оформлен через шапку! ID: ${result.orderId} для пользователя: ${sessionUserId}`);
-					clearCart();
-				}
-			} catch (error) {
-				alert(`Ошибка чекаута: ${error.message}`);
+		try {
+			const result = await checkout();
+			
+			if (result.success) {
+				alert(`Заказ успешно оформлен через шапку! ID: ${result.orderId} для пользователя: ${result.userId}`);
+				clearCart();
 			}
+		} catch (error) {
+			alert(`Ошибка чекаута: ${error.message}`);
 		}
 	};
-	
 	
 	return (
 			<section className="cart-modal">

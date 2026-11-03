@@ -3,10 +3,6 @@ import { persist } from 'zustand/middleware';
 import { Cart } from '../domain/cart.domain.js';
 import { MarketplaceApiClient } from './api.client.js';
 
-/**
- * Zustand-хранилище для управления состоянием корзины с персистентностью в localStorage.
- * Слой: Application (State Management)
- */
 export const useCartStore = create(
 		persist(
 				(set, get) => ({
@@ -15,22 +11,47 @@ export const useCartStore = create(
 					
 					addItem: (product, quantity) => {
 						const cartDomain = new Cart();
-						
 						get().items.forEach(item => {
 							cartDomain.addItem(item.product, item.quantity);
 						});
-						
 						cartDomain.addItem(product, quantity);
-						
 						set({
 							items: cartDomain.items,
 							totalPrice: cartDomain.totalPrice,
 						});
 					},
 					
-					checkout: async ({ userId, productId, quantity }) => {
+					checkout: async () => {
+						const items = get().items;
+						if (items.length === 0) throw new Error('Cart is empty');
+						
+						const firstItem = items[0];
 						const apiClient = new MarketplaceApiClient('');
-						return await apiClient.createOrder({ userId, productId, quantity });
+						
+						let sessionUserId = null;
+						const isClient = typeof window !== 'undefined';
+						
+						if (isClient) {
+							sessionUserId = localStorage.getItem('void_session_user_id');
+						}
+						
+						if (!sessionUserId) {
+							sessionUserId = Math.floor(100000 + Math.random() * 900000).toString();
+							if (isClient) {
+								localStorage.setItem('void_session_user_id', sessionUserId);
+							}
+						}
+						
+						const result = await apiClient.createOrder({
+							userId: Number(sessionUserId),
+							productId: firstItem.product.id,
+							quantity: firstItem.quantity
+						});
+						
+						return {
+							...result,
+							userId: sessionUserId
+						};
 					},
 					
 					clearCart: () => {

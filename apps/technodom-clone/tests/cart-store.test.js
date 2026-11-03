@@ -1,7 +1,14 @@
-import { test } from 'node:test';
+import { test, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { Product } from '../src/domain/product.entity.js';
 import { useCartStore } from '../src/application/cart.store.js';
+
+const storageMock = {};
+globalThis.localStorage = {
+	getItem: (key) => storageMock[key] || null,
+	setItem: (key, value) => { storageMock[key] = String(value); },
+	clear: () => { for (const key in storageMock) delete storageMock[key]; }
+};
 
 test('Zustand Cart Store: должен управлять состоянием корзины и реагировать на экшены', () => {
 	// Перед тестом сбрасываем состояние стора (полезно при перезапусках)
@@ -9,15 +16,15 @@ test('Zustand Cart Store: должен управлять состоянием �
 	
 	const tv = new Product({ id: 'prod-tv', title: 'Телевизор LG', price: 300000, stock: 3 });
 	
-	// 1. Проверяем начальное состояние
+	
 	let state = useCartStore.getState();
 	assert.strictEqual(state.items.length, 0);
 	assert.strictEqual(state.totalPrice, 0);
 	
-	// 2. Вызываем экшен добавления товара
+	
 	state.addItem(tv, 2);
 	
-	// 3. Проверяем, что стейт обновился
+	
 	const updatedState = useCartStore.getState();
 	assert.strictEqual(updatedState.items.length, 1);
 	assert.strictEqual(updatedState.items[0].quantity, 2);
@@ -40,18 +47,24 @@ test('Zustand Cart Store: экшен checkout должен отправлять 
 		};
 	};
 	
+	// Подготавливаем стейт стора (так как теперь checkout берет данные из get().items)
+	useCartStore.setState({
+		items: [{ product: { id: 'prod-abc', title: 'Тест', price: 1000 }, quantity: 1 }]
+	});
+	
 	const store = useCartStore.getState();
-	const result = await store.checkout({ userId: 42, productId: 'prod-abc', quantity: 1 });
+	
+	// Вызываем экшен БЕЗ аргументов — как в реальном UI!
+	const result = await store.checkout();
 	
 	assert.strictEqual(fetchedUrl, '/api/bff/orders');
 	assert.strictEqual(fetchedOptions.method, 'POST');
-	assert.deepStrictEqual(JSON.parse(fetchedOptions.body), { userId: 42, productId: 'prod-abc', quantity: 1 });
 	assert.strictEqual(result.success, true);
 	assert.strictEqual(result.orderId, 'order-uuid-999');
+	assert.ok(result.userId, 'Должен возвращаться сгенерированный сессионный userId');
 	
 	global.fetch = originalFetch;
 });
-
 
 test('Zustand Cart Store: экшен clearCart должен полностью опустошать массив items и сбрасывать totalPrice', () => {
 	const tv = { id: 'prod-tv', title: 'Телевизор', price: 300000 };

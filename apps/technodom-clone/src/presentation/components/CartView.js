@@ -1,3 +1,4 @@
+// apps/technodom-clone/src/presentation/components/CartView.js
 'use client';
 
 import React from 'react';
@@ -5,10 +6,6 @@ import { useCartStore } from '@/application/cart.store.js';
 import { Button } from '../shared/Button.js';
 import { InstallmentBadge } from '../shared/InstallmentBadge.js';
 
-/**
- * Интерактивный клиентский компонент детального просмотра и чекаута корзины.
- * Слой: Presentation (Client Component Island)
- */
 export function CartView() {
 	const items = useCartStore((state) => state.items);
 	const totalPrice = useCartStore((state) => state.totalPrice);
@@ -16,33 +13,17 @@ export function CartView() {
 	const clearCart = useCartStore((state) => state.clearCart);
 	
 	const handleOrderCheckout = async () => {
-		if (items.length === 0) return;
-		
 		try {
-			const firstItem = items[0];
-			
-			let sessionUserId = localStorage.getItem('void_session_user_id');
-			if (!sessionUserId) {
-				sessionUserId = Math.floor(100000 + Math.random() * 900000).toString();
-				localStorage.setItem('void_session_user_id', sessionUserId);
-			}
-			
-			const result = await checkout({
-				userId: Number(sessionUserId),
-				productId: firstItem.product.id,
-				quantity: firstItem.quantity
-			});
+			const result = await checkout();
 			
 			if (result.success) {
-				alert(`Заказ успешно оформлен! ID заказа: ${result.orderId} для пользователя: ${sessionUserId}`);
+				alert(`Заказ успешно оформлен! ID: ${result.orderId} для пользователя: ${result.userId}`);
 				clearCart();
 			}
 		} catch (error) {
 			alert(`Ошибка финтех-чекаута: ${error.message}`);
 		}
 	};
-	
-	
 	
 	if (items.length === 0) {
 		return <div className="cart-view__empty">Ваша корзина пуста. Вернитесь в каталог товаров.</div>;
