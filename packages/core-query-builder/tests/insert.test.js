@@ -22,3 +22,23 @@ test('QueryBuilder: должен выбрасывать ошибку при пу
     message: 'Insert data cannot be empty'
   });
 });
+
+test('QueryBuilder: должен нативно генерировать INSERT с опциональным reference_id для финтех-транзакций', () => {
+  const qb = new QueryBuilder();
+  const data = {
+    wallet_id: 'uuid-wallet-123',
+    amount: 500,
+    type: 'TRANSFER',
+    status: 'COMPLETED',
+    reference_id: 'uuid-saga-order-777' // Наше опциональное поле связи микросервисов
+  };
+  
+  const result = qb.insertInto('transactions', data).build();
+  
+  // Мы ожидаем строгую параметризацию пяти колонок СУБД по Клепманну
+  assert.strictEqual(
+      result.sql,
+      'INSERT INTO transactions (wallet_id, amount, type, status, reference_id) VALUES ($1, $2, $3, $4, $5);'
+  );
+  assert.deepStrictEqual(result.params, ['uuid-wallet-123', 500, 'TRANSFER', 'COMPLETED', 'uuid-saga-order-777']);
+});

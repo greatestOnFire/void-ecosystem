@@ -1,4 +1,6 @@
-import crypto from 'node:crypto'
+// apps/marketplace-service/src/use-cases/create-order.js
+
+import crypto from 'node:crypto';
 
 /**
  * @typedef {Object} CreateOrderInput
@@ -9,8 +11,6 @@ import crypto from 'node:crypto'
 
 /**
  * Сценарий использования: Создание нового заказа (Use Case).
- * Оркеструет проверку остатков, цен и транзакционную запись в СУБД.
- * Слой: Application (Use Cases)
  */
 export class CreateOrder {
 	#productRepo;
@@ -18,13 +18,6 @@ export class CreateOrder {
 	#db;
 	#eventBus;
 	
-	/**
-	 * @param {Object} dependencies
-	 * @param {Object} dependencies.productRepo
-	 * @param {Object} dependencies.orderRepo
-	 * @param {Object} dependencies.db
-	 * @param {Object} dependencies.eventBus
-	 */
 	constructor({ productRepo, orderRepo, db, eventBus }) {
 		this.#productRepo = productRepo;
 		this.#orderRepo = orderRepo;
@@ -44,19 +37,19 @@ export class CreateOrder {
 			throw new Error('Product not found');
 		}
 		
-		if ( product.stock < quantity ) {
+		if (product.stock < quantity) {
 			throw new Error('Insufficient stock');
 		}
 		
 		const orderId = crypto.randomUUID();
 		
-		// Получаем изолированного клиента из пула СУБД
+		const idempotencyKey = crypto.randomUUID();
+		
 		const client = await this.#db.getTransactionClient();
 		
 		try {
 			await client.query('BEGIN');
 			
-			// Генерируем SQL-инструкцию через наш Data Mapper репозиторий
 			const insertQuery = this.#orderRepo.save({
 				id: orderId,
 				userId,
@@ -65,8 +58,7 @@ export class CreateOrder {
 				status: 'PENDING'
 			});
 			
-			await client.query(insertQuery.sql, insertQuery.params );
-			
+			await client.query(insertQuery.sql, insertQuery.params);
 			await client.query('COMMIT');
 			
 			const totalAmount = product.price * quantity;
@@ -76,16 +68,15 @@ export class CreateOrder {
 				payload: {
 					amount: totalAmount,
 					originalReferenceId: orderId,
+					idempotencyKey: idempotencyKey
 				}
-			})
+			});
 			
 			return { success: true, orderId };
 		} catch (error) {
-			// При любом сбое — откатываем изменения локально
 			await client.query('ROLLBACK');
 			throw error;
 		} finally {
-			// Обязательно возвращаем клиента обратно в пул соединений Linux/Postgres
 			client.release();
 		}
 	}

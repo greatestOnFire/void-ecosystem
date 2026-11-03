@@ -79,28 +79,18 @@ test('CreateOrder Use Case: должен выбрасывать ошибку, е
 	);
 });
 
-test('CreateOrder Use Case: должен успешно открыть транзакцию, записать заказ в БД и опубликовать правильный orderId в Сагу', async () => {
-	//  Имитируем, что товар успешно найден и на складе его достаточно
+test('CreateOrder Use Case: должен успешно открыть транзакцию, записать заказ в БД и опубликовать правильный orderId и idempotencyKey в Сагу', async () => {
 	const targetProductId = 'prod-laptop-123';
 	const mockProductRepo = {
 		findById: async (id) => ({ id, title: 'Ноутбук', price: 400000, stock: 10 })
 	};
 	
-	// Имитируем, что репозиторий заказов генерирует правильный SQL контракт
-	let saveCalledWith = null;
 	const mockOrderRepo = {
-		save: (order) => {
-			saveCalledWith = order;
-			return { sql: 'INSERT INTO orders (id) VALUES ($1);', params: [order.id] };
-		}
+		save: (order) => ({ sql: 'INSERT INTO orders (id) VALUES ($1);', params: [order.id] })
 	};
 	
-	// Имитируем транзакционного клиента СУБД для проверки вызовов BEGIN/COMMIT
-	const executedQueries = [];
 	const mockClient = {
-		query: async (sql, params) => {
-			executedQueries.push(sql);
-		},
+		query: async () => {},
 		release: () => {}
 	};
 	
@@ -108,7 +98,6 @@ test('CreateOrder Use Case: должен успешно открыть тран�
 		getTransactionClient: async () => mockClient
 	};
 	
-	// Перехватываем событие шины для Саги
 	let publishedChannel = null;
 	let publishedEvent = null;
 	const mockEventBus = {
@@ -123,7 +112,7 @@ test('CreateOrder Use Case: должен успешно открыть тран�
 		productRepo: mockProductRepo,
 		orderRepo: mockOrderRepo,
 		db: mockDb,
-		eventBus: mockEventBus // Внедряем мок шины
+		eventBus: mockEventBus
 	});
 	
 	const result = await useCase.execute({
@@ -132,14 +121,15 @@ test('CreateOrder Use Case: должен успешно открыть тран�
 		quantity: 1
 	});
 	
-	// --- ПРОВЕРКА ФИНТЕХ-ИНВАРИАНТОВ СУБД ---
 	assert.strictEqual(result.success, true);
-	assert.ok(result.orderId); // ID заказа сгенерирован (UUID)
+	assert.ok(result.orderId);
 	
-	// --- ПРОВЕРКА СКВОЗНОГО КОНТЕКСТА САГИ (Падающий инвариант) ---
+	// --- ПРОВЕРКА СКВОЗНОГО КОНТЕКСТА САГИ И ИДЕМПОТЕНТНОСТИ ---
 	assert.strictEqual(publishedChannel, 'payment-commands');
 	assert.strictEqual(publishedEvent.type, 'PROCESS_TRANSFER');
-	
-	// КРИТИЧЕСКАЯ ТОЧКА: Ожидаем, что originalReferenceId равен именно сгенерированному orderId, а не productId!
 	assert.strictEqual(publishedEvent.payload.originalReferenceId, result.orderId);
+	
+	// 🔥 ЭТОТ АССЕРТ УПАДЕТ (RED): Проверяем, что маркетплейс генерирует финтех-ключ защиты от дублей
+	assert.ok(publishedEvent.payload.idempotencyKey, 'Сага-команда обязана содержать idempotencyKey');
+	assert.strictEqual(typeof publishedEvent.payload.idempotencyKey, 'string');
 });
