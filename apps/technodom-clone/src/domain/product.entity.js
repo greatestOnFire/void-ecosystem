@@ -78,10 +78,10 @@ export class Product {
 	}
 	
 	/**
-	 * Преобразует доменную сущность в плоский DTO-объект для безопасной сериализации в Zustand/localStorage
-	 * @returns {Object} Plain JavaScript Object
+	 * Стандартный метод сериализации ECMAScript для JSON.stringify
+	 * @returns {Object} Чистый плоский объект для инфраструктурных слоев
 	 */
-	toDTO() {
+	toJSON() {
 		return {
 			id: this.#id,
 			title: this.#title,

@@ -20,8 +20,7 @@ export const useCartStore = create(
 							cartDomain.addItem(item.product, item.quantity);
 						});
 						
-						const productData = typeof product.toDTO === 'function' ? product.toDTO() : product;
-						cartDomain.addItem(productData, quantity);
+						cartDomain.addItem(product, quantity);
 						
 						set({
 							items: cartDomain.items,
