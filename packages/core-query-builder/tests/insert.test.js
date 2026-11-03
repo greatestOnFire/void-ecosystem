@@ -35,7 +35,6 @@ test('QueryBuilder: должен нативно генерировать INSERT 
   
   const result = qb.insertInto('transactions', data).build();
   
-  // Мы ожидаем строгую параметризацию пяти колонок СУБД по Клепманну
   assert.strictEqual(
       result.sql,
       'INSERT INTO transactions (wallet_id, amount, type, status, reference_id) VALUES ($1, $2, $3, $4, $5);'
