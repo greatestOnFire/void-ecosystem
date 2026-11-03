@@ -21,14 +21,21 @@ export function CartModal() {
 		if (items.length > 0) {
 			try {
 				const firstItem = items[0];
+				
+				let sessionUserId = localStorage.getItem('void_session_user_id');
+				if (!sessionUserId) {
+					sessionUserId = Math.floor(100000 + Math.random() * 900000).toString();
+					localStorage.setItem('void_session_user_id', sessionUserId);
+				}
+				
 				const result = await checkout({
-					userId: 42,
+					userId: Number(sessionUserId),
 					productId: firstItem.product.id,
 					quantity: firstItem.quantity
 				});
 				
 				if (result.success) {
-					alert(`Заказ успешно оформлен через шапку! ID: ${result.orderId}`);
+					alert(`Заказ успешно оформлен через шапку! ID: ${result.orderId} для пользователя: ${sessionUserId}`);
 					clearCart();
 				}
 			} catch (error) {
@@ -36,6 +43,7 @@ export function CartModal() {
 			}
 		}
 	};
+	
 	
 	return (
 			<section className="cart-modal">
