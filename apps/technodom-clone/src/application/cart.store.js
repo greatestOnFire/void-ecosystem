@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Cart } from '../domain/cart.domain.js';
+import { MarketplaceApiClient } from './api.client.js';
 
 /**
  * Zustand-хранилище для управления состоянием корзины с персистентностью в localStorage.
@@ -19,7 +20,6 @@ export const useCartStore = create(
 							cartDomain.addItem(item.product, item.quantity);
 						});
 						
-						// Если к нам прилетел экземпляр класса Product с методом toDTO, вызываем его
 						const productData = typeof product.toDTO === 'function' ? product.toDTO() : product;
 						cartDomain.addItem(productData, quantity);
 						
@@ -30,15 +30,8 @@ export const useCartStore = create(
 					},
 					
 					checkout: async ({ userId, productId, quantity }) => {
-						const response = await fetch('/api/bff/orders', {
-							method: 'POST',
-							headers: {
-								'Content-Type': 'application/json',
-							},
-							body: JSON.stringify({ userId, productId, quantity }),
-						});
-						
-						return await response.json();
+						const apiClient = new MarketplaceApiClient('');
+						return await apiClient.createOrder({ userId, productId, quantity });
 					},
 					
 					clearCart: () => {

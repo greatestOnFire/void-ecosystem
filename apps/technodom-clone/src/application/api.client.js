@@ -54,4 +54,30 @@ export class MarketplaceApiClient {
 			stock: Number(rawProduct.stock)
 		});
 	}
+	
+	/**
+	 * Отправка заказа на оформление через BFF гейтвей
+	 * @param {Object} input
+	 * @param {number} input.userId - ID пользователя
+	 * @param {string} input.productId - UUID товара
+	 * @param {number} input.quantity - Количество
+	 * @returns {Promise<Object>} Данные ответа (success, orderId)
+	 */
+	async createOrder({ userId, productId, quantity }) {
+		const response = await fetch(`${this.#baseUrl}/api/bff/orders`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ userId, productId, quantity }),
+		});
+		
+		const data = await response.json();
+		
+		if (!response.ok || data.error) {
+			throw new Error(data.error || 'BFF orders route execution failed');
+		}
+		
+		return data;
+	}
 }
