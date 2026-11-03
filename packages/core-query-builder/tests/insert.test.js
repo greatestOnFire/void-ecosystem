@@ -30,7 +30,7 @@ test('QueryBuilder: должен нативно генерировать INSERT 
     amount: 500,
     type: 'TRANSFER',
     status: 'COMPLETED',
-    reference_id: 'uuid-saga-order-777' // Наше опциональное поле связи микросервисов
+    reference_id: 'uuid-saga-order-777'
   };
   
   const result = qb.insertInto('transactions', data).build();
