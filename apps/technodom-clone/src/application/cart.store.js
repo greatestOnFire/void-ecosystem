@@ -47,6 +47,32 @@ export const useCartStore = create(
 						return data;
 					},
 					
+					register: async (email, password) => {
+						const response = await fetch('/api/bff/auth/register', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({ email, password })
+						});
+						
+						const data = await response.json();
+						if (!response.ok || data.error) {
+							throw new Error(data.error || 'Registration failed');
+						}
+						return data;
+					},
+					
+					logout: () => {
+						set({
+							accessToken: null,
+							sessionId: null,
+							authUserId: null
+						});
+						if (typeof window !== 'undefined') {
+							localStorage.removeItem('void_session_user_id');
+						}
+					},
+					
+					
 					checkout: async () => {
 						const items = get().items;
 						if (items.length === 0) throw new Error('Cart is empty');
